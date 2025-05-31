@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class Player : MonoBehaviour
@@ -21,6 +23,12 @@ public class Player : MonoBehaviour
 
     [Header("Velocidad del michi uwu")]
     public float speed = 5f;
+
+
+    [Header("Combate")]
+    public bool tieneArma = true; // puedes cambiar a false si quieres desactivarlo
+    public Text textoDebug; // referencia al texto en pantalla para mostrar teclas
+
 
     private Rigidbody2D rb;
 
@@ -68,7 +76,50 @@ public class Player : MonoBehaviour
         }
 
         wasWalking = isWalking; // Recordamos para la próxima uwu
+
+        if (Input.anyKeyDown)
+        {
+            foreach (KeyCode kcode in System.Enum.GetValues(typeof(KeyCode)))
+            {
+                if (Input.GetKeyDown(kcode))
+                {
+                    if (textoDebug != null)
+                    {
+                        textoDebug.text = $"Presionaste: {kcode}";
+                        CancelInvoke("BorrarTextoDebug");
+                        Invoke("BorrarTextoDebug", 2f);
+                    }
+
+                    if (kcode == KeyCode.F)
+                    {
+                        if (tieneArma)
+                        {
+                            Debug.Log("Ataque activado");
+                            textoDebug.text = $"Presionaste: {kcode} (ataque activado)";
+                        }
+                        else
+                        {
+                            Debug.Log("Intento de ataque sin arma");
+                            textoDebug.text = $"Presionaste: {kcode} (sin arma)";
+                        }
+
+                        CancelInvoke("BorrarTextoDebug");
+                        Invoke("BorrarTextoDebug", 2f);
+                    }
+
+                    break;
+                }
+            }
+        }
+
     }
+
+    void BorrarTextoDebug()
+    {
+        if (textoDebug != null)
+            textoDebug.text = "";
+    }
+
 
     void FixedUpdate()
     {
