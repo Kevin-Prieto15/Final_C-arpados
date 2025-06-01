@@ -16,7 +16,9 @@ public class Player : MonoBehaviour
     private GameObject currentModel;
     private Animator currentAnimator;
     private AudioSource stepAudio;
+    public GameObject EfectoCaminar;
     private bool wasWalking = false;
+    private float particulaCollDown=0;
 
     private Vector2 input;
     private Vector2 lastDirection;
@@ -60,6 +62,16 @@ public class Player : MonoBehaviour
                 SetDirection("Front");
 
             SetWalking(true);
+            if (particulaCollDown>=0.3f)
+            {
+                Instantiate(EfectoCaminar, new Vector3(gameObject.transform.position.x, gameObject.transform.position.y - 0.7f), Quaternion.Euler(-90, 0, 0));
+                particulaCollDown = 0;
+            }
+            else
+            {
+                particulaCollDown += Time.deltaTime;
+            }
+
         }
         else
         {
