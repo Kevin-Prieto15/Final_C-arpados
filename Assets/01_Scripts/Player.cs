@@ -4,37 +4,42 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-
-[RequireComponent(typeof(Rigidbody2D))]
 public class Player : MonoBehaviour
 {
-    private bool esInvisible = false;
+    // ╔═ Campos de Dirección y Modelos ═══════════════════════════════════════╗
+    private enum Direction { Front, Back, SideRight, SideLeft }
 
     [Header("Modelos del michi animadooo")]
-    [SerializeField] private GameObject Front;
-    [SerializeField] private GameObject Back;
-    [SerializeField] private GameObject SideRight;
-    [SerializeField] private GameObject SideLeft;
+    [SerializeField] private GameObject frontModel;
+    [SerializeField] private GameObject backModel;
+    [SerializeField] private GameObject sideRightModel;
+    [SerializeField] private GameObject sideLeftModel;
 
     private GameObject currentModel;
     private Animator currentAnimator;
-    private AudioSource stepAudio;
-    public GameObject EfectoCaminar;
-    private bool wasWalking = false;
-    private float particulaCollDown = 0;
 
+    // ╔═ Audio y Efectos ═══════════════════════════════════════════════╗
+    private AudioSource stepAudio;
+    public GameObject efectoCaminar;
+    private bool wasWalking = false;
+    private float particulaCooldown = 0f;
+
+    // ╔═ Movimiento ═════════════════════════════════════════════════╗
+    private Rigidbody2D rb;
     private Vector2 input;
     private Vector2 lastDirection;
-
     [Header("Velocidad del michi 7u7")]
     public float speed = 5f;
 
+    // ╔═ Invisibilidad ════════════════════════════════════════════╗
+    private bool esInvisible = false;
+
+    // ╔═ Combate ═════════════════════════════════════════════════╗
     [Header("Combate")]
     public bool tieneArma = true;
     public Text textoDebug;
 
-    private Rigidbody2D rb;
-
+    // ╔═ Estamina ═════════════════════════════════════════════════╗
     [Header("Estamina")]
     public Slider staminaSlider;
     public float maxStamina = 8f;
@@ -48,62 +53,83 @@ public class Player : MonoBehaviour
     private bool isRegenerating = false;
     private float defaultSpeed;
 
+    // ╔═ Hambre y Sed ════════════════════════════════════════════╗
     [Header("Hambre y Sed")]
     public TextMeshProUGUI textoHambre;
     public TextMeshProUGUI textoSed;
 
     private float hambre = 0f; // 0% al 100%
-    private float sed = 0f;
-
+    private float sed = 0f;    // 0% al 100%
     private float timerHambre = 0f;
     private float timerSed = 0f;
 
-
-    void Awake()
+    // ╔═ Unity Callbacks ══════════════════════════════════════════╗
+    private void Awake()
     {
+        // Obtener componentes
         rb = GetComponent<Rigidbody2D>();
-        SetDirection("Front");
-        lastDirection = Vector2.down;
         stepAudio = GetComponent<AudioSource>();
 
+        stepAudio.Stop();
+
+        // Inicializar dirección por defecto
+        SetDirection(Direction.Front);
+        lastDirection = Vector2.down;
+
+        // Guardar valores iniciales de velocidad y estamina
         defaultSpeed = speed;
         currentStamina = maxStamina;
 
+        // Configurar slider de estamina si existe
         if (staminaSlider != null)
         {
             staminaSlider.maxValue = maxStamina;
+            staminaSlider.minValue = 0f;
             staminaSlider.value = currentStamina;
         }
-
-        staminaSlider.maxValue = maxStamina;
-        staminaSlider.minValue = 0;
-        staminaSlider.value = currentStamina;
-
     }
-    void Update()
+
+    private void Update()
+    {
+        LeerInputMovimiento();
+        ManejarMovimientoYAnimaciones();
+        ManejarEntradaGeneral();
+        ManejarCorrerYEstamina();
+        ActualizarIndicadoresHambreSed();
+    }
+
+    private void FixedUpdate()
+    {
+        MoverAlrigido();
+    }
+
+    // ╔═ Métodos de Input y Movimiento ═══════════════════════════════╗
+    private void LeerInputMovimiento()
     {
         input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
+    }
+
+    private void ManejarMovimientoYAnimaciones()
+    {
         bool isWalking = input != Vector2.zero;
 
         if (isWalking)
         {
             lastDirection = input;
-
-            if (input.x > 0) SetDirection("SideRight");
-            else if (input.x < 0) SetDirection("SideLeft");
-            else if (input.y > 0) SetDirection("Back");
-            else if (input.y < 0) SetDirection("Front");
-
+            Direction nuevaDir = ObtenerDireccionDesdeInput(input);
+            SetDirection(nuevaDir);
             SetWalking(true);
 
-            if (particulaCollDown >= 0.3f)
+            // Partícula al caminar cada 0.3s
+            if (particulaCooldown >= 0.3f)
             {
-                Instantiate(EfectoCaminar, new Vector3(transform.position.x, transform.position.y - 0.7f), Quaternion.Euler(-90, 0, 0));
-                particulaCollDown = 0;
+                Vector3 posParticula = new Vector3(transform.position.x, transform.position.y - 0.7f);
+                Instantiate(efectoCaminar, posParticula, Quaternion.Euler(-90, 0, 0));
+                particulaCooldown = 0f;
             }
             else
             {
-                particulaCollDown += Time.deltaTime;
+                particulaCooldown += Time.deltaTime;
             }
         }
         else
@@ -111,68 +137,102 @@ public class Player : MonoBehaviour
             SetWalking(false);
         }
 
+        // Sonido de pasos
         if (isWalking && !wasWalking) stepAudio.Play();
         else if (!isWalking && wasWalking) stepAudio.Stop();
-
         wasWalking = isWalking;
+    }
 
+    private Direction ObtenerDireccionDesdeInput(Vector2 dir)
+    {
+        if (dir.x > 0) return Direction.SideRight;
+        else if (dir.x < 0) return Direction.SideLeft;
+        else if (dir.y > 0) return Direction.Back;
+        else return Direction.Front;
+    }
+
+    private void MoverAlrigido()
+    {
+        bool shiftPresionado = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        float velocidadActual = (shiftPresionado && currentStamina > 0f) ? runSpeed : defaultSpeed;
+        Vector2 nuevaPos = rb.position + input * velocidadActual * Time.fixedDeltaTime;
+        rb.MovePosition(nuevaPos);
+    }
+
+    // ╔═ Métodos de Entrada General (Teclas) ═════════════════════════╗
+    private void ManejarEntradaGeneral()
+    {
         if (Input.anyKeyDown)
         {
-            foreach (KeyCode kcode in System.Enum.GetValues(typeof(KeyCode)))
+            // Detectar cualquier tecla y mostrar en debug
+            foreach (KeyCode tecla in System.Enum.GetValues(typeof(KeyCode)))
             {
-                if (Input.GetKeyDown(kcode))
+                if (Input.GetKeyDown(tecla))
                 {
                     if (textoDebug != null)
                     {
-                        textoDebug.text = $"Presionaste: {kcode}";
-                        CancelInvoke("BorrarTextoDebug");
-                        Invoke("BorrarTextoDebug", 2f);
+                        textoDebug.text = $"Presionaste: {tecla}";
+                        CancelInvoke(nameof(BorrarTextoDebug));
+                        Invoke(nameof(BorrarTextoDebug), 2f);
                     }
 
-                    if (kcode == KeyCode.F)
+                    // Manejar ataque con F
+                    if (tecla == KeyCode.F)
                     {
                         if (tieneArma)
                         {
                             Debug.Log("Ataque activado");
-                            textoDebug.text = $"Presionaste: {kcode} (ataque activado)";
+                            textoDebug.text = $"Presionaste: {tecla} (ataque activado)";
                         }
                         else
                         {
                             Debug.Log("Intento de ataque sin arma");
-                            textoDebug.text = $"Presionaste: {kcode} (sin arma)";
+                            textoDebug.text = $"Presionaste: {tecla} (sin arma)";
                         }
 
-                        CancelInvoke("BorrarTextoDebug");
-                        Invoke("BorrarTextoDebug", 2f);
+                        CancelInvoke(nameof(BorrarTextoDebug));
+                        Invoke(nameof(BorrarTextoDebug), 2f);
                     }
-
                     break;
                 }
             }
 
+            // Si estaba invisible y presiona algo, volver a aparecer
             if (esInvisible)
-                StartCoroutine(FadeInvisibilidad(true));
+            {
+                esInvisible = false;
+                StartCoroutine(FadeInvisibilidad(esInvisible));
+            }
         }
 
+        // Alternar invisibilidad con N
         if (Input.GetKeyDown(KeyCode.N))
         {
             esInvisible = !esInvisible;
             StartCoroutine(FadeInvisibilidad(esInvisible));
         }
 
-        // --- Lógica de correr y estamina ---
-        bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-        bool wantsToRun = shift && input != Vector2.zero;
-        bool canRun = currentStamina > 0f;
+        // Solo debug extra cuando se presiona RightShift
+        if (Input.GetKeyDown(KeyCode.RightShift))
+        {
+            Debug.Log("RightShift PRESIONADO");
+        }
+    }
 
-        isRunning = wantsToRun && canRun;
-        Debug.Log("Corriendo: " + isRunning + " | Stamina: " + currentStamina);
+    // ╔═ Métodos de Correr y Estamina ═══════════════════════════════╗
+    private void ManejarCorrerYEstamina()
+    {
+        bool shiftPresionado = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        bool quiereCorrer = shiftPresionado && input != Vector2.zero;
+        bool puedeCorrer = currentStamina > 0f;
+
+        isRunning = quiereCorrer && puedeCorrer;
+        //Debug.Log($"Corriendo: {isRunning} | Stamina: {currentStamina}");
 
         if (isRunning)
         {
             currentStamina -= Time.deltaTime;
             if (currentStamina < 0f) currentStamina = 0f;
-
             regenTimer = 0f;
             isRegenerating = false;
         }
@@ -181,7 +241,6 @@ public class Player : MonoBehaviour
             if (currentStamina < maxStamina)
             {
                 regenTimer += Time.deltaTime;
-
                 if (regenTimer >= regenDelay)
                 {
                     isRegenerating = true;
@@ -199,22 +258,29 @@ public class Player : MonoBehaviour
         if (staminaSlider != null)
         {
             staminaSlider.value = currentStamina;
-
             Image fillImage = staminaSlider.fillRect.GetComponent<Image>();
             if (fillImage != null)
             {
                 fillImage.color = Color.Lerp(Color.red, Color.cyan, currentStamina / maxStamina);
             }
         }
+    }
 
-        if (Input.GetKey(KeyCode.RightShift))
-            Debug.Log("RightShift PRESIONADO");
-
+    // ╔═ Métodos de Hambre y Sed ═══════════════════════════════════╗
+    private void ActualizarIndicadoresHambreSed()
+    {
         // Aumentar hambre cada 10 segundos
         timerHambre += Time.deltaTime;
         if (timerHambre >= 10f)
         {
-            hambre = Mathf.Min(hambre + 1f, 100f);
+            if (esInvisible)
+            {
+                hambre = Mathf.Min(hambre + (1f) * 2, 100f);
+            }
+            else
+            {
+                hambre = Mathf.Min(hambre + 1f, 100f);
+            }
             timerHambre = 0f;
         }
 
@@ -222,85 +288,79 @@ public class Player : MonoBehaviour
         timerSed += Time.deltaTime;
         if (timerSed >= 5f)
         {
-            sed = Mathf.Min(sed + 1f, 100f);
+            if (esInvisible)
+            {
+                sed = Mathf.Min(sed + (1f) * 2, 100f);
+            }
+            else
+            {
+                sed = Mathf.Min(sed + 1f, 100f);
+            }
             timerSed = 0f;
         }
 
-        // Actualizar textos
-        if (textoHambre != null) textoHambre.text = $"Hambre {hambre}%";
-        if (textoSed != null) textoSed.text = $"Sed {sed}%";
-
-        //Kevin estubo aqui
-        //Final update
+        // Actualizar textos en UI
+        if (textoHambre != null)
+            textoHambre.text = $"Hambre {hambre}%";
+        if (textoSed != null)
+            textoSed.text = $"Sed {sed}%";
     }
 
-
-    void FixedUpdate()
+    // ╔═ Métodos de Modelos y Animaciones ════════════════════════════╗
+    private void SetDirection(Direction dir)
     {
-        float moveSpeed = (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) && currentStamina > 0f
-            ? runSpeed
-            : defaultSpeed;
-
-        rb.MovePosition(rb.position + input * moveSpeed * Time.fixedDeltaTime);
-    }
-
-
-    void SetDirection(string direction)
-    {
-        GameObject newModel = null;
-
-        switch (direction)
+        GameObject nextModel = dir switch
         {
-            case "Front":
-                newModel = Front;
-                break;
-            case "Back":
-                newModel = Back;
-                break;
-            case "SideRight":
-                newModel = SideRight;
-                break;
-            case "SideLeft":
-                newModel = SideLeft;
-                break;
-        }
+            Direction.Front => frontModel,
+            Direction.Back => backModel,
+            Direction.SideRight => sideRightModel,
+            Direction.SideLeft => sideLeftModel,
+            _ => frontModel
+        };
 
-        if (newModel == currentModel)
-            return;
+        if (nextModel == currentModel) return;
 
-        Front.SetActive(false);
-        Back.SetActive(false);
-        SideRight.SetActive(false);
-        SideLeft.SetActive(false);
+        // Desactivar todos los modelos
+        frontModel.SetActive(false);
+        backModel.SetActive(false);
+        sideRightModel.SetActive(false);
+        sideLeftModel.SetActive(false);
 
-        newModel.SetActive(true);
-        currentModel = newModel;
+        // Activar el modelo deseado
+        nextModel.SetActive(true);
+        currentModel = nextModel;
         currentAnimator = currentModel.GetComponent<Animator>();
 
+        // Si estaba invisible, reaplicar transparencia
         if (esInvisible)
+        {
             StartCoroutine(FadeInvisibilidad(true));
+        }
     }
 
-    void SetWalking(bool isWalking)
+    private void SetWalking(bool walking)
     {
         if (currentAnimator != null)
         {
-            currentAnimator.SetBool("IsWalking", isWalking);
+            currentAnimator.SetBool("IsWalking", walking);
         }
     }
 
-    IEnumerator FadeInvisibilidad(bool invisible)
+    // ╔═ Métodos de Invisibilidad ═══════════════════════════════════╗
+    private IEnumerator FadeInvisibilidad(bool invisible)
     {
         float targetAlpha = invisible ? 0f : 1f;
         float duration = 0.4f;
         float time = 0f;
 
+        // Reunir todos los SpriteRenderer de los modelos
         List<SpriteRenderer> renderers = new List<SpriteRenderer>();
-        renderers.AddRange(Front.GetComponentsInChildren<SpriteRenderer>(true));
-        renderers.AddRange(Back.GetComponentsInChildren<SpriteRenderer>(true));
-        renderers.AddRange(SideRight.GetComponentsInChildren<SpriteRenderer>(true));
-        renderers.AddRange(SideLeft.GetComponentsInChildren<SpriteRenderer>(true));
+        renderers.AddRange(frontModel.GetComponentsInChildren<SpriteRenderer>(true));
+        renderers.AddRange(backModel.GetComponentsInChildren<SpriteRenderer>(true));
+        renderers.AddRange(sideRightModel.GetComponentsInChildren<SpriteRenderer>(true));
+        renderers.AddRange(sideLeftModel.GetComponentsInChildren<SpriteRenderer>(true));
 
+        // Guardar alfas iniciales
         Dictionary<SpriteRenderer, float> startAlphas = new Dictionary<SpriteRenderer, float>();
         foreach (var sr in renderers)
         {
@@ -308,6 +368,7 @@ public class Player : MonoBehaviour
                 startAlphas[sr] = sr.color.a;
         }
 
+        // Interpolar alfas durante la duración
         while (time < duration)
         {
             time += Time.deltaTime;
@@ -320,10 +381,10 @@ public class Player : MonoBehaviour
                 c.a = Mathf.Lerp(startAlphas[sr], targetAlpha, t);
                 sr.color = c;
             }
-
             yield return null;
         }
 
+        // Asegurar valor final
         foreach (var sr in renderers)
         {
             if (sr == null) continue;
@@ -333,23 +394,10 @@ public class Player : MonoBehaviour
         }
     }
 
-    void SetAlpha(GameObject obj, float alpha)
-    {
-        if (obj == null) return;
-
-        SpriteRenderer[] renderers = obj.GetComponentsInChildren<SpriteRenderer>(true);
-        foreach (SpriteRenderer sr in renderers)
-        {
-            if (sr == null) continue;
-            Color c = sr.color;
-            c.a = alpha;
-            sr.color = c;
-        }
-    }
-
-    void BorrarTextoDebug()
+    // ╔═ Métodos Auxiliares ══════════════════════════════════════════╗
+    private void BorrarTextoDebug()
     {
         if (textoDebug != null)
-            textoDebug.text = "";
+            textoDebug.text = string.Empty;
     }
 }
