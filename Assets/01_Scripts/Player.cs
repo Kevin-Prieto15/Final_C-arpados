@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.UIElements;
 
 public class Player : MonoBehaviour
 {
@@ -30,6 +31,7 @@ public class Player : MonoBehaviour
     private Vector2 lastDirection;
     [Header("Velocidad del michi 7u7")]
     public float speed = 5f;
+    private bool primeraVez = true;
 
     // ╔═ Invisibilidad ════════════════════════════════════════════╗
     private bool esInvisible = false;
@@ -41,7 +43,7 @@ public class Player : MonoBehaviour
 
     // ╔═ Estamina ═════════════════════════════════════════════════╗
     [Header("Estamina")]
-    public Slider staminaSlider;
+    public UnityEngine.UI.Slider staminaSlider;
     public float maxStamina = 8f;
     public float regenDelay = 2f;
     public float regenDuration = 4f;
@@ -62,6 +64,12 @@ public class Player : MonoBehaviour
     private float sed = 0f;    // 0% al 100%
     private float timerHambre = 0f;
     private float timerSed = 0f;
+
+    // ╔═ Herramientas ════════════════════════════════════════════╗
+    [Header("Herramientas")]
+    public bool isAxe = false;
+    public bool isPickaxe = false;
+    public bool isLance = false;
 
     // ╔═ Unity Callbacks ══════════════════════════════════════════╗
     private void Awake()
@@ -96,6 +104,7 @@ public class Player : MonoBehaviour
         ManejarEntradaGeneral();
         ManejarCorrerYEstamina();
         ActualizarIndicadoresHambreSed();
+
     }
 
     private void FixedUpdate()
@@ -119,6 +128,8 @@ public class Player : MonoBehaviour
             Direction nuevaDir = ObtenerDireccionDesdeInput(input);
             SetDirection(nuevaDir);
             SetWalking(true);
+            
+            
 
             // Partícula al caminar cada 0.3s
             if (particulaCooldown >= 0.3f)
@@ -179,17 +190,19 @@ public class Player : MonoBehaviour
                     // Manejar ataque con F
                     if (tecla == KeyCode.F)
                     {
-                        if (tieneArma)
+                        if (isAxe)
                         {
-                            Debug.Log("Ataque activado");
-                            textoDebug.text = $"Presionaste: {tecla} (ataque activado)";
+                            currentAnimator.SetTrigger("AxeAttack");
                         }
-                        else
+                        else if (isLance)
                         {
-                            Debug.Log("Intento de ataque sin arma");
-                            textoDebug.text = $"Presionaste: {tecla} (sin arma)";
+                            currentAnimator.SetTrigger("LanceAttak");
                         }
-
+                        else if (isPickaxe)
+                        {
+                            currentAnimator.SetTrigger("PickaxeAttack");
+                        }
+                        else { Debug.Log("Intento de ataque sin arma");}
                         CancelInvoke(nameof(BorrarTextoDebug));
                         Invoke(nameof(BorrarTextoDebug), 2f);
                     }
@@ -258,7 +271,7 @@ public class Player : MonoBehaviour
         if (staminaSlider != null)
         {
             staminaSlider.value = currentStamina;
-            Image fillImage = staminaSlider.fillRect.GetComponent<Image>();
+            UnityEngine.UI.Image fillImage = staminaSlider.fillRect.GetComponent<UnityEngine.UI.Image>();
             if (fillImage != null)
             {
                 fillImage.color = Color.Lerp(Color.red, Color.cyan, currentStamina / maxStamina);
@@ -307,6 +320,8 @@ public class Player : MonoBehaviour
     }
 
     // ╔═ Métodos de Modelos y Animaciones ════════════════════════════╗
+
+
     private void SetDirection(Direction dir)
     {
         GameObject nextModel = dir switch
@@ -321,22 +336,57 @@ public class Player : MonoBehaviour
         if (nextModel == currentModel) return;
 
         // Desactivar todos los modelos
+        if (!primeraVez)
+        {
+            currentAnimator.Rebind();
+        }
+        else
+        {
+            primeraVez = false;
+        }
+
         frontModel.SetActive(false);
         backModel.SetActive(false);
         sideRightModel.SetActive(false);
         sideLeftModel.SetActive(false);
 
-        // Activar el modelo deseado
+        // Activar el nuevo modelito uwu~
         nextModel.SetActive(true);
         currentModel = nextModel;
         currentAnimator = currentModel.GetComponent<Animator>();
+        
 
-        // Si estaba invisible, reaplicar transparencia
+
+        // 🌟 Buscar Axe y Pickaxe en todos los hijitos ocultos y mostrarlos solo si los bools lo dicen owo
+        Transform[] children = currentModel.GetComponentsInChildren<Transform>(true);
+
+        foreach (Transform child in children)
+        {
+            string name = child.name.ToLower();
+
+            if (name.Contains("pickaxe"))
+            {
+                child.gameObject.SetActive(isPickaxe);
+            }
+            else if (name.Contains("axe") && !name.Contains("pickaxe"))
+            {
+                child.gameObject.SetActive(isAxe);
+            }
+            else if (name.Contains("lance")) // puedes ajustar las palabras clave uwu
+            {
+                child.gameObject.SetActive(isLance);
+            }
+        }
+
+
+        // Reaplicar invisibilidad si estaba en modo fantasmita 👻✨
         if (esInvisible)
         {
             StartCoroutine(FadeInvisibilidad(true));
         }
     }
+
+
 
     private void SetWalking(bool walking)
     {
@@ -400,4 +450,40 @@ public class Player : MonoBehaviour
         if (textoDebug != null)
             textoDebug.text = string.Empty;
     }
+
+    // ╔═ Métodos Herramientas ══════════════════════════════════════════╗
+    public void EquipWeapon(int weaponType)
+    {
+        isPickaxe = false;
+        isAxe = false;
+        isLance = false;
+
+        switch (weaponType)
+        {
+            case 0: isAxe = true; break;
+            case 1: isPickaxe = true; break;
+            case 2: isLance = true; break;
+        }
+
+        Transform[] children = currentModel.GetComponentsInChildren<Transform>(true);
+
+        foreach (Transform child in children)
+        {
+            string name = child.name.ToLower();
+
+            if (name.Contains("pickaxe"))
+            {
+                child.gameObject.SetActive(isPickaxe);
+            }
+            else if (name.Contains("axe") && !name.Contains("pickaxe"))
+            {
+                child.gameObject.SetActive(isAxe);
+            }
+            else if (name.Contains("lance"))
+            {
+                child.gameObject.SetActive(isLance);
+            }
+        }
+    }
+
 }

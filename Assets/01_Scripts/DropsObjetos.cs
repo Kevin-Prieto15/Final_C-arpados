@@ -11,7 +11,7 @@ public class DropsObjetos : MonoBehaviour
     
 
     // Update is called once per frame
-    void takeDamage(float damage)
+    public void takeDamage(float damage)
     {
         life -= damage;
         if (life <= 0)
