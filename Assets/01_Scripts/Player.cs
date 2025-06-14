@@ -7,6 +7,7 @@ using UnityEngine.UIElements;
 
 public class Player : MonoBehaviour
 {
+    public static Player Instance;
     // ╔═ Campos de Dirección y Modelos ═══════════════════════════════════════╗
     private enum Direction { Front, Back, SideRight, SideLeft }
 
@@ -70,10 +71,15 @@ public class Player : MonoBehaviour
     public bool isAxe = false;
     public bool isPickaxe = false;
     public bool isLance = false;
+    Collider2D currentWeapon=null;
+    public float ToolDuration=1;
+    float ToolTimer = 0;
+    bool ToolAttack=false;
 
     // ╔═ Unity Callbacks ══════════════════════════════════════════╗
     private void Awake()
     {
+        Instance = this;
         // Obtener componentes
         rb = GetComponent<Rigidbody2D>();
         stepAudio = GetComponent<AudioSource>();
@@ -99,13 +105,26 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
+        
         LeerInputMovimiento();
         ManejarMovimientoYAnimaciones();
         ManejarEntradaGeneral();
         ManejarCorrerYEstamina();
         ActualizarIndicadoresHambreSed();
+        if (ToolAttack)
+        {
+            ToolTimer += Time.deltaTime;
 
+            if (ToolTimer >= ToolDuration)
+            {
+                ToolTimer = 0f;
+                ToolAttack = false;
+                if (currentWeapon != null)
+                    currentWeapon.enabled = false; // ✨ Collider OFF después del ataque
+            }
+        }
     }
+
 
     private void FixedUpdate()
     {
@@ -188,21 +207,25 @@ public class Player : MonoBehaviour
                     }
 
                     // Manejar ataque con F
-                    if (tecla == KeyCode.F)
+                    if (tecla == KeyCode.F && (isAxe||isPickaxe||isLance))
                     {
+                        if (currentWeapon == null)
+                        {
+                            Debug.Log("Intento de ataque sin arma");
+                            return;
+                        }
+
                         if (isAxe)
-                        {
                             currentAnimator.SetTrigger("AxeAttack");
-                        }
                         else if (isLance)
-                        {
-                            currentAnimator.SetTrigger("LanceAttak");
-                        }
+                            currentAnimator.SetTrigger("LanceAttack");
                         else if (isPickaxe)
-                        {
                             currentAnimator.SetTrigger("PickaxeAttack");
-                        }
-                        else { Debug.Log("Intento de ataque sin arma");}
+
+                        currentWeapon.enabled = true;
+                        ToolTimer = 0f;
+                        ToolAttack = true;
+
                         CancelInvoke(nameof(BorrarTextoDebug));
                         Invoke(nameof(BorrarTextoDebug), 2f);
                     }
@@ -335,7 +358,6 @@ public class Player : MonoBehaviour
 
         if (nextModel == currentModel) return;
 
-        // Desactivar todos los modelos
         if (!primeraVez)
         {
             currentAnimator.Rebind();
@@ -350,41 +372,76 @@ public class Player : MonoBehaviour
         sideRightModel.SetActive(false);
         sideLeftModel.SetActive(false);
 
-        // Activar el nuevo modelito uwu~
         nextModel.SetActive(true);
         currentModel = nextModel;
         currentAnimator = currentModel.GetComponent<Animator>();
-        
 
-
-        // 🌟 Buscar Axe y Pickaxe en todos los hijitos ocultos y mostrarlos solo si los bools lo dicen owo
-        Transform[] children = currentModel.GetComponentsInChildren<Transform>(true);
-
-        foreach (Transform child in children)
+        // SOLO reconfigura los colliders si NO estás atacando owo~
+        if (!ToolAttack && (isPickaxe || isLance || isAxe))
         {
-            string name = child.name.ToLower();
+            Transform[] children = currentModel.GetComponentsInChildren<Transform>(true);
 
-            if (name.Contains("pickaxe"))
+            foreach (Transform child in children)
             {
-                child.gameObject.SetActive(isPickaxe);
+                string name = child.name.ToLower();
+
+                if (name.Equals("pickaxe"))
+                {
+                    child.gameObject.SetActive(isPickaxe);
+                    if (isPickaxe)
+                    {
+                        currentWeapon = child.gameObject.GetComponent<Collider2D>();
+                        currentWeapon.enabled = false;
+                    }
+                }
+                else if (name.Equals("axe"))
+                {
+                    child.gameObject.SetActive(isAxe);
+                    if (isAxe)
+                    {
+
+                        currentWeapon = child.gameObject.GetComponent<Collider2D>();
+                        currentWeapon.enabled = false;
+                    }
+                }
+                else if (name.Equals("lance"))
+                {
+                    child.gameObject.SetActive(isLance);
+                    if (isLance) 
+                    {
+
+                        currentWeapon = child.gameObject.GetComponent<Collider2D>();
+                        currentWeapon.enabled = false;
+                    }
+                }
             }
-            else if (name.Contains("axe") && !name.Contains("pickaxe"))
+        }
+        else if (!isAxe && !isLance && !isPickaxe) {
+            Transform[] children = currentModel.GetComponentsInChildren<Transform>(true);
+
+            foreach (Transform child in children)
             {
-                child.gameObject.SetActive(isAxe);
-            }
-            else if (name.Contains("lance")) // puedes ajustar las palabras clave uwu
-            {
-                child.gameObject.SetActive(isLance);
+                string name = child.name.ToLower();
+
+                if (name.Equals("pickaxe"))
+                {
+                    child.gameObject.SetActive(false);
+                }
+                else if (name.Equals("axe"))
+                {
+                    child.gameObject.SetActive(false);
+                }
+                else if (name.Equals("lance"))
+                {
+                    child.gameObject.SetActive(false);
+                }
             }
         }
 
-
-        // Reaplicar invisibilidad si estaba en modo fantasmita 👻✨
         if (esInvisible)
-        {
             StartCoroutine(FadeInvisibilidad(true));
-        }
     }
+
 
 
 
@@ -465,23 +522,65 @@ public class Player : MonoBehaviour
             case 2: isLance = true; break;
         }
 
-        Transform[] children = currentModel.GetComponentsInChildren<Transform>(true);
-
-        foreach (Transform child in children)
+        if(isPickaxe || isLance || isAxe)
         {
-            string name = child.name.ToLower();
+            Transform[] children = currentModel.GetComponentsInChildren<Transform>(true);
 
-            if (name.Contains("pickaxe"))
+            foreach (Transform child in children)
             {
-                child.gameObject.SetActive(isPickaxe);
+                string name = child.name.ToLower();
+
+                if (name.Equals("pickaxe"))
+                {
+                    child.gameObject.SetActive(isPickaxe);
+                    if (isPickaxe)
+                    {
+                        currentWeapon = child.gameObject.GetComponent<Collider2D>();
+                        currentWeapon.enabled = false; // Desactivar el collider nwn
+                    }
+                }
+                else if (name.Equals("axe"))
+                {
+                    child.gameObject.SetActive(isAxe);
+
+                    if (isAxe)
+                    {
+                        currentWeapon = child.gameObject.GetComponent<Collider2D>();
+                        currentWeapon.enabled = false; // Desactivar el collider nwn
+                    }
+                }
+                else if (name.Equals("lance"))
+                {
+                    child.gameObject.SetActive(isLance);
+
+                    if (isLance)
+                    {
+                        currentWeapon = child.gameObject.GetComponent<Collider2D>();
+                        currentWeapon.enabled = false; // Desactivar el collider nwn
+                    }
+                }
             }
-            else if (name.Contains("axe") && !name.Contains("pickaxe"))
+        }
+        else
+        {
+            Transform[] children = currentModel.GetComponentsInChildren<Transform>(true);
+
+            foreach (Transform child in children)
             {
-                child.gameObject.SetActive(isAxe);
-            }
-            else if (name.Contains("lance"))
-            {
-                child.gameObject.SetActive(isLance);
+                string name = child.name.ToLower();
+
+                if (name.Equals("pickaxe"))
+                {
+                    child.gameObject.SetActive(false);
+                }
+                else if (name.Equals("axe"))
+                {
+                    child.gameObject.SetActive(false);
+                }
+                else if (name.Equals("lance"))
+                {
+                    child.gameObject.SetActive(false);
+                }
             }
         }
     }
