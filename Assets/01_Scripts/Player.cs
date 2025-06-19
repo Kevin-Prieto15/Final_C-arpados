@@ -20,6 +20,11 @@ public class Player : MonoBehaviour
     private GameObject currentModel;
     private Animator currentAnimator;
 
+    // ╔═ Salud ═════════════════════════════════════════════════════════════╗
+    public float maxHealth = 100f;
+    public float currentHealth;
+    private bool isDead = false;
+
     // ╔═ Audio y Efectos ═══════════════════════════════════════════════╗
     private AudioSource stepAudio;
     public GameObject efectoCaminar;
@@ -92,6 +97,7 @@ public class Player : MonoBehaviour
 
         // Guardar valores iniciales de velocidad y estamina
         defaultSpeed = speed;
+        currentHealth = maxHealth;
         currentStamina = maxStamina;
 
         // Configurar slider de estamina si existe
@@ -105,12 +111,27 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        
         LeerInputMovimiento();
         ManejarMovimientoYAnimaciones();
+
+        // Lanzar ataque según dirección
+        if (Input.GetKeyDown(KeyCode.F) && tieneArma)
+        {
+            if (currentAnimator != null)
+            {
+                currentAnimator.SetTrigger("Attack");
+
+                if (lastDirection.y > 0) currentAnimator.SetInteger("Direction", 1); // Back
+                else if (lastDirection.y < 0) currentAnimator.SetInteger("Direction", 0); // Front
+                else if (lastDirection.x > 0) currentAnimator.SetInteger("Direction", 3); // Right
+                else if (lastDirection.x < 0) currentAnimator.SetInteger("Direction", 2); // Left
+            }
+        }
+
         ManejarEntradaGeneral();
         ManejarCorrerYEstamina();
         ActualizarIndicadoresHambreSed();
+
         if (ToolAttack)
         {
             ToolTimer += Time.deltaTime;
@@ -120,10 +141,11 @@ public class Player : MonoBehaviour
                 ToolTimer = 0f;
                 ToolAttack = false;
                 if (currentWeapon != null)
-                    currentWeapon.enabled = false; // ✨ Collider OFF después del ataque
+                    currentWeapon.enabled = false;
             }
         }
     }
+
 
 
     private void FixedUpdate()
@@ -584,5 +606,69 @@ public class Player : MonoBehaviour
             }
         }
     }
+
+
+    public void TakeDamage(float damage)
+    {
+        Debug.Log("TakeDamage ejecutado");
+
+        if (esInvisible || isDead)
+        {
+            Debug.Log("Pero el jugador está invisible o muerto, así que no recibe daño.");
+            return;
+        }
+
+        currentHealth -= damage;
+        Debug.Log($"Recibió {damage} de daño. Vida restante: {currentHealth}");
+
+        if (currentHealth <= 0f)
+        {
+            currentHealth = 0f;
+            Die();
+        }
+    }
+
+
+    private void Die()
+    {
+        isDead = true;
+        Debug.Log("🐱 El michi ha muerto.");
+        rb.velocity = Vector2.zero;
+        enabled = false;
+    }
+
+    // ╔═ Métodos de Efectos de Estado (Slow) ═══════════════════════════╗
+    private bool isSlowed = false;
+    private float slowTimer = 0f;
+    private float originalSpeed;
+    private float originalRunSpeed;
+
+    public void ApplySlow(float factor, float duration)
+    {
+        if (isSlowed || isDead) return;
+
+        isSlowed = true;
+        originalSpeed = speed;
+        originalRunSpeed = runSpeed;
+
+        speed *= factor;
+        runSpeed *= factor;
+
+        Debug.Log($"Jugador ralentizado: factor {factor}, duración {duration}s");
+
+        StartCoroutine(RemoveSlowAfter(duration));
+    }
+
+    private IEnumerator RemoveSlowAfter(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+
+        speed = originalSpeed;
+        runSpeed = originalRunSpeed;
+        isSlowed = false;
+
+        Debug.Log("Ralentización eliminada. Velocidad restaurada.");
+    }
+
 
 }
