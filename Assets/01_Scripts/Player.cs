@@ -485,5 +485,10 @@ public class Player : MonoBehaviour
             }
         }
     }
+    public bool EstaInvisible()
+    {
+        return esInvisible;
+    }
+
 
 }
