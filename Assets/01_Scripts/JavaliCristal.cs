@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class JavaliCristal : MonoBehaviour
 {
+    [Header("Stats")]
+    public int vida = 30;
+    public int daño = 5;
+
     [Header("Movimiento y Animación")]
     public float velocidad = 3f;
     public float distanciaDeteccion = 5f;
@@ -201,8 +205,8 @@ public class JavaliCristal : MonoBehaviour
         {
             animator.SetTrigger("IsAttaking");
 
-            int daño = (estadoActual == Estado.TurboRun) ? 2 : 1;
-            //collision.gameObject.GetComponent<Player>()?.TakeDamage(daño);
+            int d = (estadoActual == Estado.TurboRun) ? daño*2 : daño;
+            collision.gameObject.GetComponent<Player>()?.TakeDamage(d);
 
             cooldownAtaque = tiempoEntreAtaques;
         }

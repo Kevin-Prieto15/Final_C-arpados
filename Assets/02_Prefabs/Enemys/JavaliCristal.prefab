@@ -211,7 +211,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ad80f8b68fbe6b4299e8db259c2517b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  velocidad: 3
+  velocidad: 6
+  distanciaDeteccion: 10
+  distanciaAbandono: 10
+  tiempoEntreAtaques: 1
   tiempoMovimientoAleatorio: {x: 2, y: 5}
   tiempoQuietoAleatorio: {x: 2, y: 5}
 --- !u!50 &8729000143347095874

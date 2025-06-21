@@ -5,6 +5,11 @@ using UnityEngine;
 
 public class Serpiente : MonoBehaviour
 {
+    [Header("Stats")]
+    public float vida = 30f;
+    public float daño = 5f;
+
+
     [Header("Movimiento y Animación")]
     public float velocidad = 3f;
     public float distanciaDeteccion = 5f;
@@ -159,7 +164,7 @@ public class Serpiente : MonoBehaviour
         if (collision.gameObject.CompareTag("Player") && cooldownAtaque <= 0f)
         {
             animator.SetTrigger("IsAttaking");
-            //collision.gameObject.GetComponent<Player>()?.TakeDamage(1);
+            collision.gameObject.GetComponent<Player>()?.TakeDamage(daño);
             cooldownAtaque = tiempoEntreAtaques;
         }
     }
