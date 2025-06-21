@@ -7,6 +7,7 @@ using UnityEngine.UIElements;
 
 public class Player : MonoBehaviour
 {
+    public static Player Instance;
     // ╔═ Campos de Dirección y Modelos ═══════════════════════════════════════╗
     private enum Direction { Front, Back, SideRight, SideLeft }
 
@@ -18,6 +19,11 @@ public class Player : MonoBehaviour
 
     private GameObject currentModel;
     private Animator currentAnimator;
+
+    // ╔═ Salud ═════════════════════════════════════════════════════════════╗
+    public float maxHealth = 100f;
+    public float currentHealth;
+    private bool isDead = false;
 
     // ╔═ Audio y Efectos ═══════════════════════════════════════════════╗
     private AudioSource stepAudio;
@@ -70,10 +76,15 @@ public class Player : MonoBehaviour
     public bool isAxe = false;
     public bool isPickaxe = false;
     public bool isLance = false;
+    Collider2D currentWeapon=null;
+    public float ToolDuration=1;
+    float ToolTimer = 0;
+    bool ToolAttack=false;
 
     // ╔═ Unity Callbacks ══════════════════════════════════════════╗
     private void Awake()
     {
+        Instance = this;
         // Obtener componentes
         rb = GetComponent<Rigidbody2D>();
         stepAudio = GetComponent<AudioSource>();
@@ -86,6 +97,7 @@ public class Player : MonoBehaviour
 
         // Guardar valores iniciales de velocidad y estamina
         defaultSpeed = speed;
+        currentHealth = maxHealth;
         currentStamina = maxStamina;
 
         // Configurar slider de estamina si existe
@@ -101,11 +113,40 @@ public class Player : MonoBehaviour
     {
         LeerInputMovimiento();
         ManejarMovimientoYAnimaciones();
+
+        // Lanzar ataque según dirección
+        if (Input.GetKeyDown(KeyCode.F) && tieneArma)
+        {
+            if (currentAnimator != null)
+            {
+                currentAnimator.SetTrigger("Attack");
+
+                if (lastDirection.y > 0) currentAnimator.SetInteger("Direction", 1); // Back
+                else if (lastDirection.y < 0) currentAnimator.SetInteger("Direction", 0); // Front
+                else if (lastDirection.x > 0) currentAnimator.SetInteger("Direction", 3); // Right
+                else if (lastDirection.x < 0) currentAnimator.SetInteger("Direction", 2); // Left
+            }
+        }
+
         ManejarEntradaGeneral();
         ManejarCorrerYEstamina();
         ActualizarIndicadoresHambreSed();
 
+        if (ToolAttack)
+        {
+            ToolTimer += Time.deltaTime;
+
+            if (ToolTimer >= ToolDuration)
+            {
+                ToolTimer = 0f;
+                ToolAttack = false;
+                if (currentWeapon != null)
+                    currentWeapon.enabled = false;
+            }
+        }
     }
+
+
 
     private void FixedUpdate()
     {
@@ -188,21 +229,25 @@ public class Player : MonoBehaviour
                     }
 
                     // Manejar ataque con F
-                    if (tecla == KeyCode.F)
+                    if (tecla == KeyCode.F && (isAxe||isPickaxe||isLance))
                     {
+                        if (currentWeapon == null)
+                        {
+                            Debug.Log("Intento de ataque sin arma");
+                            return;
+                        }
+
                         if (isAxe)
-                        {
                             currentAnimator.SetTrigger("AxeAttack");
-                        }
                         else if (isLance)
-                        {
-                            currentAnimator.SetTrigger("LanceAttak");
-                        }
+                            currentAnimator.SetTrigger("LanceAttack");
                         else if (isPickaxe)
-                        {
                             currentAnimator.SetTrigger("PickaxeAttack");
-                        }
-                        else { Debug.Log("Intento de ataque sin arma");}
+
+                        currentWeapon.enabled = true;
+                        ToolTimer = 0f;
+                        ToolAttack = true;
+
                         CancelInvoke(nameof(BorrarTextoDebug));
                         Invoke(nameof(BorrarTextoDebug), 2f);
                     }
@@ -335,7 +380,6 @@ public class Player : MonoBehaviour
 
         if (nextModel == currentModel) return;
 
-        // Desactivar todos los modelos
         if (!primeraVez)
         {
             currentAnimator.Rebind();
@@ -350,41 +394,76 @@ public class Player : MonoBehaviour
         sideRightModel.SetActive(false);
         sideLeftModel.SetActive(false);
 
-        // Activar el nuevo modelito uwu~
         nextModel.SetActive(true);
         currentModel = nextModel;
         currentAnimator = currentModel.GetComponent<Animator>();
-        
 
-
-        // 🌟 Buscar Axe y Pickaxe en todos los hijitos ocultos y mostrarlos solo si los bools lo dicen owo
-        Transform[] children = currentModel.GetComponentsInChildren<Transform>(true);
-
-        foreach (Transform child in children)
+        // SOLO reconfigura los colliders si NO estás atacando owo~
+        if (!ToolAttack && (isPickaxe || isLance || isAxe))
         {
-            string name = child.name.ToLower();
+            Transform[] children = currentModel.GetComponentsInChildren<Transform>(true);
 
-            if (name.Contains("pickaxe"))
+            foreach (Transform child in children)
             {
-                child.gameObject.SetActive(isPickaxe);
+                string name = child.name.ToLower();
+
+                if (name.Equals("pickaxe"))
+                {
+                    child.gameObject.SetActive(isPickaxe);
+                    if (isPickaxe)
+                    {
+                        currentWeapon = child.gameObject.GetComponent<Collider2D>();
+                        currentWeapon.enabled = false;
+                    }
+                }
+                else if (name.Equals("axe"))
+                {
+                    child.gameObject.SetActive(isAxe);
+                    if (isAxe)
+                    {
+
+                        currentWeapon = child.gameObject.GetComponent<Collider2D>();
+                        currentWeapon.enabled = false;
+                    }
+                }
+                else if (name.Equals("lance"))
+                {
+                    child.gameObject.SetActive(isLance);
+                    if (isLance) 
+                    {
+
+                        currentWeapon = child.gameObject.GetComponent<Collider2D>();
+                        currentWeapon.enabled = false;
+                    }
+                }
             }
-            else if (name.Contains("axe") && !name.Contains("pickaxe"))
+        }
+        else if (!isAxe && !isLance && !isPickaxe) {
+            Transform[] children = currentModel.GetComponentsInChildren<Transform>(true);
+
+            foreach (Transform child in children)
             {
-                child.gameObject.SetActive(isAxe);
-            }
-            else if (name.Contains("lance")) // puedes ajustar las palabras clave uwu
-            {
-                child.gameObject.SetActive(isLance);
+                string name = child.name.ToLower();
+
+                if (name.Equals("pickaxe"))
+                {
+                    child.gameObject.SetActive(false);
+                }
+                else if (name.Equals("axe"))
+                {
+                    child.gameObject.SetActive(false);
+                }
+                else if (name.Equals("lance"))
+                {
+                    child.gameObject.SetActive(false);
+                }
             }
         }
 
-
-        // Reaplicar invisibilidad si estaba en modo fantasmita 👻✨
         if (esInvisible)
-        {
             StartCoroutine(FadeInvisibilidad(true));
-        }
     }
+
 
 
 
@@ -465,29 +544,135 @@ public class Player : MonoBehaviour
             case 2: isLance = true; break;
         }
 
-        Transform[] children = currentModel.GetComponentsInChildren<Transform>(true);
-
-        foreach (Transform child in children)
+        if(isPickaxe || isLance || isAxe)
         {
-            string name = child.name.ToLower();
+            Transform[] children = currentModel.GetComponentsInChildren<Transform>(true);
 
-            if (name.Contains("pickaxe"))
+            foreach (Transform child in children)
             {
-                child.gameObject.SetActive(isPickaxe);
+                string name = child.name.ToLower();
+
+                if (name.Equals("pickaxe"))
+                {
+                    child.gameObject.SetActive(isPickaxe);
+                    if (isPickaxe)
+                    {
+                        currentWeapon = child.gameObject.GetComponent<Collider2D>();
+                        currentWeapon.enabled = false; // Desactivar el collider nwn
+                    }
+                }
+                else if (name.Equals("axe"))
+                {
+                    child.gameObject.SetActive(isAxe);
+
+                    if (isAxe)
+                    {
+                        currentWeapon = child.gameObject.GetComponent<Collider2D>();
+                        currentWeapon.enabled = false; // Desactivar el collider nwn
+                    }
+                }
+                else if (name.Equals("lance"))
+                {
+                    child.gameObject.SetActive(isLance);
+
+                    if (isLance)
+                    {
+                        currentWeapon = child.gameObject.GetComponent<Collider2D>();
+                        currentWeapon.enabled = false; // Desactivar el collider nwn
+                    }
+                }
             }
-            else if (name.Contains("axe") && !name.Contains("pickaxe"))
+        }
+        else
+        {
+            Transform[] children = currentModel.GetComponentsInChildren<Transform>(true);
+
+            foreach (Transform child in children)
             {
-                child.gameObject.SetActive(isAxe);
-            }
-            else if (name.Contains("lance"))
-            {
-                child.gameObject.SetActive(isLance);
+                string name = child.name.ToLower();
+
+                if (name.Equals("pickaxe"))
+                {
+                    child.gameObject.SetActive(false);
+                }
+                else if (name.Equals("axe"))
+                {
+                    child.gameObject.SetActive(false);
+                }
+                else if (name.Equals("lance"))
+                {
+                    child.gameObject.SetActive(false);
+                }
             }
         }
     }
     public bool EstaInvisible()
     {
         return esInvisible;
+    }
+
+
+
+    public void TakeDamage(float damage)
+    {
+        Debug.Log("TakeDamage ejecutado");
+
+        if (esInvisible || isDead)
+        {
+            Debug.Log("Pero el jugador está invisible o muerto, así que no recibe daño.");
+            return;
+        }
+
+        currentHealth -= damage;
+        Debug.Log($"Recibió {damage} de daño. Vida restante: {currentHealth}");
+
+        if (currentHealth <= 0f)
+        {
+            currentHealth = 0f;
+            Die();
+        }
+    }
+
+
+    private void Die()
+    {
+        isDead = true;
+        Debug.Log("🐱 El michi ha muerto.");
+        rb.velocity = Vector2.zero;
+        enabled = false;
+    }
+
+    // ╔═ Métodos de Efectos de Estado (Slow) ═══════════════════════════╗
+    private bool isSlowed = false;
+    private float slowTimer = 0f;
+    private float originalSpeed;
+    private float originalRunSpeed;
+
+    public void ApplySlow(float factor, float duration)
+    {
+        if (isSlowed || isDead) return;
+
+        isSlowed = true;
+        originalSpeed = speed;
+        originalRunSpeed = runSpeed;
+
+        speed *= factor;
+        runSpeed *= factor;
+
+        Debug.Log($"Jugador ralentizado: factor {factor}, duración {duration}s");
+
+        StartCoroutine(RemoveSlowAfter(duration));
+    }
+
+    private IEnumerator RemoveSlowAfter(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+
+        speed = originalSpeed;
+        runSpeed = originalRunSpeed;
+        isSlowed = false;
+
+        Debug.Log("Ralentización eliminada. Velocidad restaurada.");
     }
 
 
