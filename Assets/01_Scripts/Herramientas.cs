@@ -31,5 +31,25 @@ public class Herramientas : MonoBehaviour
             DropsObjetos DP = collision.gameObject.GetComponent<DropsObjetos>();
             DP.takeDamage(damage);
         }
+        else if (collision.gameObject.CompareTag("Spider") && isLance)
+        {
+            Spider DP = collision.gameObject.GetComponent<Spider>();
+            DP.takeDamage(damage * 5);
+        }
+        else if (collision.gameObject.CompareTag("Serpiente") && isLance)
+        {
+            Serpiente DP = collision.gameObject.GetComponent<Serpiente>();
+            DP.takeDamage(damage * 5);
+        }
+        else if (collision.gameObject.CompareTag("Jabali") && isLance)
+        {
+            JavaliCristal DP = collision.gameObject.GetComponent<JavaliCristal>();
+            DP.takeDamage(damage*5);
+        }
+        else if (collision.gameObject.CompareTag("Owl") && isLance)
+        {
+            EchoOwl DP = collision.gameObject.GetComponent<EchoOwl>();
+            DP.takeDamage(damage * 5);
+        }
     }
 }

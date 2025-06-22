@@ -8,10 +8,11 @@ public class EchoOwl : MonoBehaviour
     public Transform firePoint;
     public GameObject projectilePrefab;
 
-    [Header("Parámetros de combate")]
+    [Header("Parï¿½metros de combate")]
     public float detectionRange = 6f;
     public float timeToStartAttacking = 1f;
     public float attackCooldown = 1f;
+    public float vida = 50;
 
     [Header("Vuelo alrededor del jugador")]
     public float orbitRadius = 3f;
@@ -97,7 +98,7 @@ public class EchoOwl : MonoBehaviour
 
     void RandomFlying()
     {
-        // Si el búho está cerca de su destino, elige uno nuevo
+        // Si el bï¿½ho estï¿½ cerca de su destino, elige uno nuevo
         if (Vector2.Distance(transform.position, randomTarget) < 0.5f)
         {
             float angle = Random.Range(0f, Mathf.PI * 2);
@@ -105,7 +106,7 @@ public class EchoOwl : MonoBehaviour
             randomTarget = (Vector2)transform.position + offset;
         }
 
-        // Movimiento más suave y continuo
+        // Movimiento mï¿½s suave y continuo
         float step = orbitSpeed * Time.deltaTime;
         transform.position = Vector2.MoveTowards(transform.position, randomTarget, step);
     }
@@ -145,6 +146,15 @@ public class EchoOwl : MonoBehaviour
                 c.a = alpha;
                 part.color = c;
             }
+        }
+    }
+
+    public void takeDamage(float dano)
+    {
+        vida -= dano;
+        if (vida <= 0)
+        {
+            Destroy(gameObject);
         }
     }
 }

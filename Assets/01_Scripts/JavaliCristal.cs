@@ -5,7 +5,7 @@ using UnityEngine;
 public class JavaliCristal : MonoBehaviour
 {
     [Header("Stats")]
-    public int vida = 30;
+    public float vida = 30;
     public int daño = 5;
 
     [Header("Movimiento y Animación")]
@@ -197,6 +197,15 @@ public class JavaliCristal : MonoBehaviour
         temporizadorPatrulla = 0f;
         estaMoviendosePatrulla = false;
         animator.SetFloat("Speed", 0);
+    }
+
+    public void takeDamage(float daño)
+    {
+        vida -= daño;
+        if (vida <= 0)
+        {
+            Destroy(gameObject);
+        }
     }
 
     void OnCollisionStay2D(Collision2D collision)

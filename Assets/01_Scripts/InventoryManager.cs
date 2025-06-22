@@ -14,7 +14,9 @@ public class InventoryManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
-        
+
+        AddItem("lance"); // owo
+        AddItem("pickaxe");
     }
 
     public void AddItem(string itemName)

@@ -1507,7 +1507,7 @@ GameObject:
   - component: {fileID: 8999546923105773168}
   m_Layer: 0
   m_Name: Spider
-  m_TagString: Untagged
+  m_TagString: Spider
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1548,6 +1548,7 @@ MonoBehaviour:
   detectionRange: 3
   biteDamage: 10
   biteCooldown: 2
+  vida: 50
   trapInterval: 5
   trapSpawnRadius: 3
   patrolChangeInterval: 2

@@ -6,6 +6,11 @@ TagManager:
   tags:
   - Rock
   - Tree
+  - Enemy
+  - Spider
+  - Serpiente
+  - Jabali
+  - Owl
   layers:
   - Default
   - TransparentFX

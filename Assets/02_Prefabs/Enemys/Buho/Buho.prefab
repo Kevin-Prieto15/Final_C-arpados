@@ -96,7 +96,7 @@ GameObject:
   - component: {fileID: 1041497123038263871}
   m_Layer: 0
   m_Name: Buho
-  m_TagString: Untagged
+  m_TagString: Owl
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -136,6 +136,7 @@ MonoBehaviour:
   detectionRange: 5
   timeToStartAttacking: 1
   attackCooldown: 1
+  vida: 50
   orbitRadius: 2
   orbitSpeed: 2
   viewFront: {fileID: 1041497124162170910}

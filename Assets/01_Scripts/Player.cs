@@ -76,8 +76,8 @@ public class Player : MonoBehaviour
     public Text textoHambre;
     public Text textoSed;
 
-    private float hambre = 0f; // 0% al 100%
-    private float sed = 0f;    // 0% al 100%
+    public float hambre = 0f; // 0% al 100%
+    public float sed = 0f;    // 0% al 100%
     private float timerHambre = 0f;
     private float timerSed = 0f;
 
@@ -277,7 +277,7 @@ public class Player : MonoBehaviour
                         if (isAxe)
                             currentAnimator.SetTrigger("AxeAttack");
                         else if (isLance)
-                            currentAnimator.SetTrigger("LanceAttack");
+                            currentAnimator.SetTrigger("LanceAttak");
                         else if (isPickaxe)
                             currentAnimator.SetTrigger("PickaxeAttack");
 
@@ -379,7 +379,18 @@ public class Player : MonoBehaviour
         timerHambre += Time.deltaTime;
         if (timerHambre >= 10f)
         {
-            hambre = Mathf.Min(hambre + (esInvisible ? 2f : 1f), 100f);
+            if (esInvisible)
+            {
+                hambre = Mathf.Min(hambre + (1f) * 3, 100f);
+            }
+            else if (isRunning)
+            {
+                hambre = Mathf.Min(hambre + (1f) * 2, 100f);
+            }
+            else
+            {
+                hambre = Mathf.Min(hambre + 1f, 100f);
+            }
             timerHambre = 0f;
         }
 
@@ -387,7 +398,18 @@ public class Player : MonoBehaviour
         timerSed += Time.deltaTime;
         if (timerSed >= 5f)
         {
-            sed = Mathf.Min(sed + (esInvisible ? 2f : 1f), 100f);
+            if (esInvisible)
+            {
+                sed = Mathf.Min(sed + (1f) * 3, 100f);
+            }
+            else if (isRunning)
+            {
+                sed = Mathf.Min(sed + (1f) * 2, 100f);
+            }
+            else
+            {
+                sed = Mathf.Min(sed + 1f, 100f);
+            }
             timerSed = 0f;
         }
 
@@ -399,6 +421,29 @@ public class Player : MonoBehaviour
         if (textoSed != null)
             textoSed.text = $"Sed {Mathf.RoundToInt(sed)}%";
 
+    }
+
+    public void TomarAgua(float cantidad)
+    {
+        sed -= cantidad;
+        if (sed < 0)
+            sed = 0;
+    }
+
+    public void Comer(float cantidadH, float cantidadS = 0f)
+    {
+        hambre -= cantidadH;
+
+        if (hambre <= 0)
+        {
+            hambre = 0;
+        }
+        if (cantidadS != 0)
+        {
+            sed -= cantidadS;
+            if (sed < 0)
+                sed = 0;
+        }
     }
 
 

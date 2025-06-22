@@ -179,7 +179,7 @@ GameObject:
   - component: {fileID: 7948901197467633116}
   m_Layer: 0
   m_Name: JavaliCristal
-  m_TagString: Untagged
+  m_TagString: Jabali
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -211,6 +211,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ad80f8b68fbe6b4299e8db259c2517b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  vida: 30
+  "da\xF1o": 5
   velocidad: 6
   distanciaDeteccion: 10
   distanciaAbandono: 10
