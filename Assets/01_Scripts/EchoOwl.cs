@@ -12,6 +12,7 @@ public class EchoOwl : MonoBehaviour
     public float detectionRange = 6f;
     public float timeToStartAttacking = 1f;
     public float attackCooldown = 1f;
+    public float vida = 50;
 
     [Header("Vuelo alrededor del jugador")]
     public float orbitRadius = 3f;
@@ -98,13 +99,13 @@ public class EchoOwl : MonoBehaviour
     }
 
     void FireProjectile()
-{
-    if (projectilePrefab == null || firePoint == null) return;
+    {
+        if (projectilePrefab == null || firePoint == null) return;
 
-    GameObject proj = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
-    // OwlProjectile owlShot = proj.GetComponent<OwlProjectile>();
-    // ya no usamos SetDirection porque ahora se mueve con gravedad
-}
+        GameObject proj = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
+        // OwlProjectile owlShot = proj.GetComponent<OwlProjectile>();
+        // ya no usamos SetDirection porque ahora se mueve con gravedad
+    }
 
 
 
@@ -136,6 +137,15 @@ public class EchoOwl : MonoBehaviour
                 c.a = alpha;
                 part.color = c;
             }
+        }
+    }
+
+    public void takeDamage(float daño)
+    {
+        vida -= daño;
+        if (vida <= 0)
+        {
+            Destroy(gameObject);
         }
     }
 }

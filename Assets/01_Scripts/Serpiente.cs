@@ -159,6 +159,15 @@ public class Serpiente : MonoBehaviour
         animator.SetFloat("Speed", 0);
     }
 
+    public void takeDamage(float daño)
+    {
+        vida -= daño;
+        if (vida <= 0)
+        {
+            Destroy(gameObject);
+        }
+    }
+
     void OnCollisionStay2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Player") && cooldownAtaque <= 0f)

@@ -66,8 +66,8 @@ public class Player : MonoBehaviour
     public TextMeshProUGUI textoHambre;
     public TextMeshProUGUI textoSed;
 
-    private float hambre = 0f; // 0% al 100%
-    private float sed = 0f;    // 0% al 100%
+    public float hambre = 0f; // 0% al 100%
+    public float sed = 0f;    // 0% al 100%
     private float timerHambre = 0f;
     private float timerSed = 0f;
 
@@ -333,6 +333,10 @@ public class Player : MonoBehaviour
         {
             if (esInvisible)
             {
+                hambre = Mathf.Min(hambre + (1f) * 3, 100f);
+            }
+            else if (isRunning)
+            {
                 hambre = Mathf.Min(hambre + (1f) * 2, 100f);
             }
             else
@@ -347,6 +351,10 @@ public class Player : MonoBehaviour
         if (timerSed >= 5f)
         {
             if (esInvisible)
+            {
+                sed = Mathf.Min(sed + (1f) * 3, 100f);
+            }
+            else if (isRunning)
             {
                 sed = Mathf.Min(sed + (1f) * 2, 100f);
             }
@@ -363,6 +371,30 @@ public class Player : MonoBehaviour
         if (textoSed != null)
             textoSed.text = $"Sed {sed}%";
     }
+
+    public void TomarAgua(float cantidad)
+    {
+        sed -= cantidad;
+        if (sed < 0)
+            sed = 0;
+    }
+
+    public void Comer(float cantidadH, float cantidadS = 0f)
+    {
+        hambre -= cantidadH;
+
+        if (hambre <= 0)
+        {
+            hambre = 0;
+        }
+        if (cantidadS != 0)
+        {
+            sed -= cantidadS;
+            if (sed < 0)
+                sed = 0;
+        }
+    }
+
 
     // ╔═ Métodos de Modelos y Animaciones ════════════════════════════╗
 

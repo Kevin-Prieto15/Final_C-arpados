@@ -12,6 +12,7 @@ public class Spider : MonoBehaviour
     public float detectionRange = 3f;
     public float biteDamage = 10f;
     public float biteCooldown = 2f;
+    public float vida = 50;
 
     [Header("Trampas")]
     public float trapInterval = 5f;
@@ -191,7 +192,14 @@ public class Spider : MonoBehaviour
             }
         }
     }
-
+    public void takeDamage(float daño)
+    {
+        vida -= daño;
+        if (vida <= 0)
+        {
+            Destroy(gameObject);
+        }
+    }
     private IEnumerator BiteCooldown()
     {
         canBite = false;
