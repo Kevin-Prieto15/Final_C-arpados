@@ -11,6 +11,8 @@ public class OwlProjectile : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = gravityScale;
+
+        Destroy(gameObject, 0.5f);
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -33,5 +35,4 @@ public class OwlProjectile : MonoBehaviour
             Destroy(gameObject);
         }
     }
-
 }

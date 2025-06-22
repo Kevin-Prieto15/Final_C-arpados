@@ -9,7 +9,7 @@ public class EchoOwl : MonoBehaviour
     public GameObject projectilePrefab;
 
     [Header("Parámetros de combate")]
-    public float detectionRange = 6f;
+    public float detectionRange = 3f;
     public float timeToStartAttacking = 1f;
     public float attackCooldown = 1f;
 
