@@ -240,7 +240,7 @@ public class Player : MonoBehaviour
                         if (isAxe)
                             currentAnimator.SetTrigger("AxeAttack");
                         else if (isLance)
-                            currentAnimator.SetTrigger("LanceAttack");
+                            currentAnimator.SetTrigger("LanceAttak");
                         else if (isPickaxe)
                             currentAnimator.SetTrigger("PickaxeAttack");
 

@@ -15,7 +15,7 @@ public class InventoryManager : MonoBehaviour
         else
             Destroy(gameObject);
 
-        AddItem("axe"); // owo
+        AddItem("lance"); // owo
         AddItem("pickaxe");
     }
 
