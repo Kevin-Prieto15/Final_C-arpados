@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 166b3b213a4b843498086cd863111cb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nombre: Arma
+  nombre: Cuchillo
 --- !u!212 &5885100794467180558
 SpriteRenderer:
   m_ObjectHideFlags: 0

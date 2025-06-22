@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class KnifePickup : MonoBehaviour
 {
-    public string nombre = "Arma";
+    public string nombre = "Cuchillo";
 
     void OnTriggerEnter2D(Collider2D other)
     {

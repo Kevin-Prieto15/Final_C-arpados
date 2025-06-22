@@ -14,9 +14,7 @@ public class InventoryManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
-
-        AddItem("axe"); // owo
-        AddItem("pickaxe");
+        
     }
 
     public void AddItem(string itemName)
@@ -26,7 +24,18 @@ public class InventoryManager : MonoBehaviour
 
         inventory[itemName]++;
         inventoryUI.UpdateUI(inventory);
-        inventoryUI.CheckForSpecialItem(itemName);
+        UpdateInventoryUI();
+    }
+
+    public Dictionary<string, int> GetInventory()
+    {
+        return inventory;
+    }
+
+    public void UpdateInventoryUI()
+    {
+        if (inventoryUI != null)
+            inventoryUI.UpdateUI(inventory);
     }
 
 }

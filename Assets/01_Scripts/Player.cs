@@ -25,6 +25,16 @@ public class Player : MonoBehaviour
     public float currentHealth;
     private bool isDead = false;
 
+    [Header("Barra de Vida")]
+    public UnityEngine.UI.Image healthBarFill;
+    public Text healthText;
+
+    public UnityEngine.UI.Image estaminaFill;
+    public Text estaminaText;
+
+
+
+
     // ╔═ Audio y Efectos ═══════════════════════════════════════════════╗
     private AudioSource stepAudio;
     public GameObject efectoCaminar;
@@ -63,8 +73,8 @@ public class Player : MonoBehaviour
 
     // ╔═ Hambre y Sed ════════════════════════════════════════════╗
     [Header("Hambre y Sed")]
-    public TextMeshProUGUI textoHambre;
-    public TextMeshProUGUI textoSed;
+    public Text textoHambre;
+    public Text textoSed;
 
     private float hambre = 0f; // 0% al 100%
     private float sed = 0f;    // 0% al 100%
@@ -107,6 +117,9 @@ public class Player : MonoBehaviour
             staminaSlider.minValue = 0f;
             staminaSlider.value = currentStamina;
         }
+
+        UpdateHealthBar();
+
     }
 
     private void Update()
@@ -144,7 +157,31 @@ public class Player : MonoBehaviour
                     currentWeapon.enabled = false;
             }
         }
+
+        UpdateHealthBar();
+
     }
+
+
+
+    private void UpdateHealthBar()
+    {
+        if (healthBarFill != null)
+        {
+            float fillAmount = currentHealth / maxHealth;
+            healthBarFill.fillAmount = fillAmount;
+
+            // Cambiar color (opcional)
+            healthBarFill.color = Color.Lerp(Color.red, Color.green, fillAmount);
+        }
+
+        if (healthText != null)
+        {
+            healthText.text = $"{Mathf.CeilToInt(currentHealth)} / {Mathf.CeilToInt(maxHealth)}";
+        }
+    }
+
+
 
 
 
@@ -322,6 +359,17 @@ public class Player : MonoBehaviour
                 fillImage.color = Color.Lerp(Color.red, Color.cyan, currentStamina / maxStamina);
             }
         }
+
+        if (estaminaFill != null)
+        {
+            float fill = currentStamina / maxStamina;
+            estaminaFill.fillAmount = fill;
+            estaminaFill.color = new Color(1f, 0.85f, 0f); // amarillo cálido
+
+        }
+        if (estaminaText != null)
+            estaminaText.text = $"Estamina {Mathf.RoundToInt(currentStamina)}";
+
     }
 
     // ╔═ Métodos de Hambre y Sed ═══════════════════════════════════╗
@@ -331,14 +379,7 @@ public class Player : MonoBehaviour
         timerHambre += Time.deltaTime;
         if (timerHambre >= 10f)
         {
-            if (esInvisible)
-            {
-                hambre = Mathf.Min(hambre + (1f) * 2, 100f);
-            }
-            else
-            {
-                hambre = Mathf.Min(hambre + 1f, 100f);
-            }
+            hambre = Mathf.Min(hambre + (esInvisible ? 2f : 1f), 100f);
             timerHambre = 0f;
         }
 
@@ -346,23 +387,20 @@ public class Player : MonoBehaviour
         timerSed += Time.deltaTime;
         if (timerSed >= 5f)
         {
-            if (esInvisible)
-            {
-                sed = Mathf.Min(sed + (1f) * 2, 100f);
-            }
-            else
-            {
-                sed = Mathf.Min(sed + 1f, 100f);
-            }
+            sed = Mathf.Min(sed + (esInvisible ? 2f : 1f), 100f);
             timerSed = 0f;
         }
 
-        // Actualizar textos en UI
+        // Actualizar texto de hambre
         if (textoHambre != null)
-            textoHambre.text = $"Hambre {hambre}%";
+            textoHambre.text = $"Hambre {Mathf.RoundToInt(hambre)}%";
+
+        // Actualizar texto de sed
         if (textoSed != null)
-            textoSed.text = $"Sed {sed}%";
+            textoSed.text = $"Sed {Mathf.RoundToInt(sed)}%";
+
     }
+
 
     // ╔═ Métodos de Modelos y Animaciones ════════════════════════════╗
 
@@ -620,6 +658,8 @@ public class Player : MonoBehaviour
 
         currentHealth -= damage;
         Debug.Log($"Recibió {damage} de daño. Vida restante: {currentHealth}");
+
+        UpdateHealthBar();
 
         if (currentHealth <= 0f)
         {
