@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 using TMPro; // Si usas TextMeshPro para textos
 
 public class CraftingPanel : MonoBehaviour
@@ -51,7 +52,6 @@ public class CraftingPanel : MonoBehaviour
             inventoryUI.panel.SetActive(true); // muestra el inventario al cerrar crafteo
     }
 
-
     void ActualizarBotones()
     {
         if (inventoryUI == null)
@@ -60,9 +60,59 @@ public class CraftingPanel : MonoBehaviour
             return;
         }
 
-        btnFabricarHacha.interactable = inventoryUI.PuedeFabricar("axe");
-        btnFabricarPico.interactable = inventoryUI.PuedeFabricar("pickaxe");
-        btnFabricarLanza.interactable = inventoryUI.PuedeFabricar("lance");
+        ActualizarBotonIndividual(btnFabricarHacha, "axe");
+        ActualizarBotonIndividual(btnFabricarPico, "pickaxe");
+        ActualizarBotonIndividual(btnFabricarLanza, "lance");
+    }
+
+    void ActualizarBotonIndividual(Button boton, string herramienta)
+    {
+        bool puede = inventoryUI.PuedeFabricar(herramienta);
+        boton.interactable = puede;
+
+        var textoTMP = boton.GetComponentInChildren<TextMeshProUGUI>();
+        var textoUI = boton.GetComponentInChildren<Text>();
+
+        string nombreVisible = herramienta.ToUpper(); // HACHA, PICKAXE...
+
+        string textoFinal = puede
+            ? $"FABRICAR {nombreVisible}"
+            : $"{nombreVisible}: Falta: {ObtenerTextoFaltante(herramienta)}";
+
+        if (textoTMP != null)
+        {
+            textoTMP.text = textoFinal;
+        }
+        else if (textoUI != null)
+        {
+            textoUI.text = textoFinal;
+        }
+        else
+        {
+            Debug.LogWarning($"No se encontró componente de texto en el botón de {herramienta}");
+        }
+    }
+
+    string ObtenerTextoFaltante(string herramienta)
+    {
+        if (inventoryUI == null || inventoryUI.craftingSystem == null) return "";
+
+        var receta = inventoryUI.craftingSystem.recetas[herramienta];
+        var inventario = InventoryManager.Instance.GetInventory();
+
+        List<string> faltan = new List<string>();
+
+        foreach (var mat in receta)
+        {
+            int cantidad = inventario.ContainsKey(mat.Key) ? inventario[mat.Key] : 0;
+            int diferencia = mat.Value - cantidad;
+            if (diferencia > 0)
+            {
+                faltan.Add($"{diferencia} {mat.Key}");
+            }
+        }
+
+        return string.Join(", ", faltan);
     }
 
     public void Fabricar(string herramienta)

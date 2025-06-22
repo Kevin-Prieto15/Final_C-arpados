@@ -154,14 +154,48 @@ public class InventoryUI : MonoBehaviour
 
         if (createToolButton != null)
         {
-            bool puedeCrear = PuedeCrearAlgunaHerramienta();
-            createToolButton.gameObject.SetActive(puedeCrear); // SOLO mostrar si puede crear
-            createToolButton.interactable = puedeCrear;
+            createToolButton.gameObject.SetActive(true); // Siempre visible
 
-            if (createToolButtonText != null)
-                createToolButtonText.text = "CREAR HERRAMIENTA";
+            bool puedeCrear = false;
+            string textoFaltante = "";
+
+            var inventario = InventoryManager.Instance.GetInventory();
+
+            foreach (var herramienta in craftingSystem.recetas.Keys)
+            {
+                if (craftingSystem.TieneMateriales(inventario, herramienta))
+                {
+                    puedeCrear = true;
+                    break;
+                }
+                else if (string.IsNullOrEmpty(textoFaltante))
+                {
+                    textoFaltante = "Faltan: " + ObtenerTextoFaltantes(herramienta);
+                }
+            }
+
         }
     }
+    private string ObtenerTextoFaltantes(string herramienta)
+    {
+        if (!craftingSystem.recetas.ContainsKey(herramienta)) return "";
+
+        var receta = craftingSystem.recetas[herramienta];
+        var inventario = InventoryManager.Instance.GetInventory();
+
+        List<string> faltan = new List<string>();
+
+        foreach (var mat in receta)
+        {
+            int cantidad = inventario.ContainsKey(mat.Key) ? inventario[mat.Key] : 0;
+            int diferencia = mat.Value - cantidad;
+            if (diferencia > 0)
+                faltan.Add($"{diferencia} {mat.Key}");
+        }
+
+        return string.Join(", ", faltan);
+    }
+
 
     private bool PuedeCrearAlgunaHerramienta()
     {

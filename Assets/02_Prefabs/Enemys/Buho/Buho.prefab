@@ -133,7 +133,7 @@ MonoBehaviour:
   buhoVisual: {fileID: 1041497123537636966}
   firePoint: {fileID: 1041497124949643560}
   projectilePrefab: {fileID: 6616901266818811923, guid: cd87a7ee4d1bb704da4619b0adfd94bc, type: 3}
-  detectionRange: 4
+  detectionRange: 5
   timeToStartAttacking: 1
   attackCooldown: 1
   orbitRadius: 2
@@ -144,6 +144,8 @@ MonoBehaviour:
   viewRight: {fileID: 1041497123749949991}
   bodyParts: []
   transparency: 0.5
+  randomFlyRadius: 2
+  randomFlyInterval: 3
 --- !u!50 &1041497123038263870
 Rigidbody2D:
   serializedVersion: 4

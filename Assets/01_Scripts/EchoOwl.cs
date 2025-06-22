@@ -22,6 +22,10 @@ public class EchoOwl : MonoBehaviour
     public SpriteRenderer[] bodyParts;
     public float transparency = 0.5f;
 
+    [Header("Vuelo aleatorio")]
+    public float randomFlyRadius = 2f;
+    public float randomFlyInterval = 3f;
+
     private Animator animator;
     private int direction = 1;
     private float timeNearPlayer = 0f;
@@ -29,6 +33,9 @@ public class EchoOwl : MonoBehaviour
     private bool isAttacking = false;
     private bool playerDetected = false;
     private float orbitAngle = 0f;
+
+    private Vector2 randomTarget;
+    private float randomFlyTimer = 0f;
 
     void Start()
     {
@@ -42,7 +49,7 @@ public class EchoOwl : MonoBehaviour
 
         SetTransparency(transparency);
         if (animator != null)
-            animator.SetBool("IsFlying", false);
+            animator.SetBool("IsFlying", true); // Siempre inicia volando
     }
 
     void Update()
@@ -54,60 +61,62 @@ public class EchoOwl : MonoBehaviour
 
         UpdateDirection();
 
-        if (!isAttacking)
+        if (playerDetected)
         {
-            if (playerDetected)
+            timeNearPlayer += Time.deltaTime;
+
+            if (!isAttacking && timeNearPlayer >= timeToStartAttacking)
             {
-                timeNearPlayer += Time.deltaTime;
-                if (timeNearPlayer >= timeToStartAttacking)
-                {
-                    isAttacking = true;
-                    animator.SetBool("IsFlying", true);
-                }
+                isAttacking = true;
             }
-            else
+
+            if (isAttacking)
             {
-                timeNearPlayer = 0f;
+                Vector2 targetPosition = new Vector2(player.transform.position.x, player.transform.position.y + 2.5f);
+                transform.position = Vector2.Lerp(transform.position, targetPosition, orbitSpeed * Time.deltaTime);
+
+                attackTimer += Time.deltaTime;
+                if (attackTimer >= attackCooldown)
+                {
+                    animator.SetTrigger("Attack");
+                    FireProjectile();
+                    attackTimer = 0f;
+                }
             }
         }
         else
         {
-            if (!playerDetected)
-            {
-                isAttacking = false;
-                timeNearPlayer = 0f;
-                attackTimer = 0f;
-                animator.SetBool("IsFlying", false);
-                return;
-            }
+            // Vuelo aleatorio constante cuando no detecta al jugador
+            isAttacking = false;
+            timeNearPlayer = 0f;
+            attackTimer = 0f;
 
-            // Volar en círculo alrededor del jugador
-            // Volar directamente sobre el jugador (por encima de su cabeza)
-            Vector2 targetPosition = new Vector2(player.transform.position.x, player.transform.position.y + 2.5f);
-            transform.position = Vector2.Lerp(transform.position, targetPosition, orbitSpeed * Time.deltaTime);
-
-
-            attackTimer += Time.deltaTime;
-            if (attackTimer >= attackCooldown)
-            {
-                animator.SetTrigger("Attack");
-                FireProjectile();
-                attackTimer = 0f;
-            }
+            RandomFlying();
         }
     }
 
+    void RandomFlying()
+    {
+        // Si el búho está cerca de su destino, elige uno nuevo
+        if (Vector2.Distance(transform.position, randomTarget) < 0.5f)
+        {
+            float angle = Random.Range(0f, Mathf.PI * 2);
+            Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * randomFlyRadius;
+            randomTarget = (Vector2)transform.position + offset;
+        }
+
+        // Movimiento más suave y continuo
+        float step = orbitSpeed * Time.deltaTime;
+        transform.position = Vector2.MoveTowards(transform.position, randomTarget, step);
+    }
+
+
     void FireProjectile()
-{
-    if (projectilePrefab == null || firePoint == null) return;
+    {
+        if (projectilePrefab == null || firePoint == null) return;
 
-    GameObject proj = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
-    // OwlProjectile owlShot = proj.GetComponent<OwlProjectile>();
-    // ya no usamos SetDirection porque ahora se mueve con gravedad
-}
-
-
-
+        Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
+    }
 
     void UpdateDirection()
     {
