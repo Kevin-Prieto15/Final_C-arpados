@@ -62,7 +62,7 @@ public class EchoOwl : MonoBehaviour
 
         UpdateDirection();
 
-        if (playerDetected)
+        if (playerDetected && !Player.Instance.esInvisible)
         {
             timeNearPlayer += Time.deltaTime;
 

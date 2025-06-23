@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -85,7 +86,7 @@ public class InventoryUI : MonoBehaviour
             contentText.text += $"{item.Key}   {item.Value}\n";
 
             // Chequea si es herramienta para agregar a dropdown
-            if (item.Key == "axe" || item.Key == "pickaxe" || item.Key == "lance")
+            if (item.Key == "axe" || item.Key == "pickaxe" || item.Key == "lance"|| item.Key == "Manzana"||item.Key == "Carne")
             {
                 if (!specialItems.Contains(item.Key))
                     specialItems.Add(item.Key);
@@ -121,7 +122,37 @@ public class InventoryUI : MonoBehaviour
             Player.Instance.EquipWeapon(1);
         else if (selectedItem == "lance")
             Player.Instance.EquipWeapon(2);
+        else if (selectedItem == "Manzana")
+        {
+            Player.Instance.Comer(15, 5);
+            Player.Instance.curar(15);
+            RemoveOrDecreaseItem(selectedItem);
+        }
+        else if (selectedItem == "Carne")
+        {
+            Player.Instance.Comer(25);
+            Player.Instance.curar(25);
+            RemoveOrDecreaseItem(selectedItem);
+        }
+
+        UpdateUI(InventoryManager.Instance.GetInventory());
     }
+
+    private void RemoveOrDecreaseItem(string itemName)
+    {
+        var inventory = InventoryManager.Instance.GetInventory();
+
+        if (inventory.ContainsKey(itemName))
+        {
+            inventory[itemName]--;
+
+            if (inventory[itemName] <= 0)
+                inventory.Remove(itemName);
+
+            InventoryManager.Instance.UpdateInventoryUI(); // Para refrescar bien bonito la UI uwu
+        }
+    }
+
 
     public bool PuedeFabricar(string herramienta)
     {

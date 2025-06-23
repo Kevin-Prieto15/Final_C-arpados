@@ -8,7 +8,7 @@ public class CraftingSystem : MonoBehaviour
     {
         { "axe", new Dictionary<string, int> { { "Madera", 3 }, { "Piedra", 1 } } },
         { "pickaxe", new Dictionary<string, int> { { "Madera", 2 }, { "Piedra", 2 } } },
-        { "lance", new Dictionary<string, int> { { "Madera", 2 }, { "Cuchillo", 1 } } },
+        { "lance", new Dictionary<string, int> { { "Madera", 2 }, { "Piedra", 1 } } },
 
     };
 

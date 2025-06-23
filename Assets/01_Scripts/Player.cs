@@ -50,7 +50,7 @@ public class Player : MonoBehaviour
     private bool primeraVez = true;
 
     // ╔═ Invisibilidad ════════════════════════════════════════════╗
-    private bool esInvisible = false;
+    public bool esInvisible = false;
 
     // ╔═ Combate ═════════════════════════════════════════════════╗
     [Header("Combate")]
@@ -331,6 +331,13 @@ public class Player : MonoBehaviour
             regenTimer = 0f;
             isRegenerating = false;
         }
+        if (esInvisible)
+        {
+            currentStamina -= Time.deltaTime;
+            if (currentStamina < 0f) currentStamina = 0f;
+            regenTimer = 0f;
+            isRegenerating = false;
+        }
         else
         {
             if (currentStamina < maxStamina)
@@ -349,7 +356,11 @@ public class Player : MonoBehaviour
                 regenTimer = 0f;
             }
         }
-
+        if (currentStamina == 0 && esInvisible)
+        {
+            esInvisible = false;
+            StartCoroutine(FadeInvisibilidad(esInvisible));
+        }
         if (staminaSlider != null)
         {
             staminaSlider.value = currentStamina;
@@ -428,6 +439,13 @@ public class Player : MonoBehaviour
         sed -= cantidad;
         if (sed < 0)
             sed = 0;
+    }
+
+    public void curar(float cantidad)
+    {
+        currentHealth += cantidad;
+        if (currentHealth >maxHealth)
+            currentHealth = maxHealth;
     }
 
     public void Comer(float cantidadH, float cantidadS = 0f)

@@ -20,6 +20,7 @@ public class JavaliCristal : MonoBehaviour
 
     private Animator animator;
     private Transform player;
+    private Player p;
     private Rigidbody2D rb;
 
     private Vector2 ultimaDireccion = Vector2.down;
@@ -41,6 +42,7 @@ public class JavaliCristal : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         player = GameObject.FindWithTag("Player")?.transform;
+        p = player?.GetComponent<Player>();
         rb = GetComponent<Rigidbody2D>();
 
         if (player == null)
@@ -64,24 +66,34 @@ public class JavaliCristal : MonoBehaviour
             case Estado.Patrullando:
                 Patrullar();
 
-                if (distanciaAlPlayer <= distanciaDeteccion && cooldownTurboRun <= 0f)
+                if (!p.esInvisible && distanciaAlPlayer <= distanciaDeteccion)
                 {
-                    PrepararTurboRun(distanciaAlPlayer);
+                    if (cooldownTurboRun <= 0)
+                    {
+                        PrepararTurboRun(distanciaAlPlayer);
+                    }
+                    else
+                    {
+                        estadoActual = Estado.Persiguiendo; // Aquí lo forzamos a seguirte si el turbo no está listo pero estás cerca
+                    }
                 }
                 break;
 
             case Estado.Persiguiendo:
-                if (distanciaAlPlayer >= distanciaAbandono)
+                if (distanciaAlPlayer >= distanciaAbandono || p.esInvisible)
                 {
                     CambiarAPatrullando();
                 }
-                else if (cooldownTurboRun <= 0f)
-                {
-                    PrepararTurboRun(distanciaAlPlayer);
-                }
                 else
                 {
-                    SeguirPlayer();
+                    if (cooldownTurboRun <= 0f)
+                    {
+                        PrepararTurboRun(distanciaAlPlayer);
+                    }
+                    else
+                    {
+                        SeguirPlayer();
+                    }
                 }
                 break;
 
@@ -212,12 +224,14 @@ public class JavaliCristal : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player") && cooldownAtaque <= 0f)
         {
-            animator.SetTrigger("IsAttaking");
+            Player p = collision.gameObject.GetComponent<Player>();
+            if (!p.esInvisible)
+            {
+                animator.SetTrigger("IsAttaking");
+                p.TakeDamage(daño);
+                cooldownAtaque = tiempoEntreAtaques;
+            }
 
-            int d = (estadoActual == Estado.TurboRun) ? daño*2 : daño;
-            collision.gameObject.GetComponent<Player>()?.TakeDamage(d);
-
-            cooldownAtaque = tiempoEntreAtaques;
         }
     }
 

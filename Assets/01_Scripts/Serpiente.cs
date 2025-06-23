@@ -22,6 +22,7 @@ public class Serpiente : MonoBehaviour
 
     private Animator animator;
     private Transform player;
+    private Player p;
     private Rigidbody2D rb;
 
     private Vector2 ultimaDireccion = Vector2.down;
@@ -38,6 +39,7 @@ public class Serpiente : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         player = GameObject.FindWithTag("Player")?.transform;
+        p = player?.GetComponent<Player>();
         rb = GetComponent<Rigidbody2D>();
 
         if (player == null)
@@ -58,17 +60,20 @@ public class Serpiente : MonoBehaviour
         {
             case Estado.Quieto:
                 animator.SetFloat("Speed", 0);
-                if (distanciaAlPlayer <= distanciaDeteccion)
+                if (distanciaAlPlayer <= distanciaDeteccion && !p.esInvisible)
                 {
                     estadoActual = Estado.Persiguiendo;
                 }
                 break;
 
             case Estado.Persiguiendo:
-                if (distanciaAlPlayer >= distanciaAbandono)
+                if (p.esInvisible)
+                {
+                    CambiarAPatrullando(); 
+                }
+                else if (distanciaAlPlayer >= distanciaAbandono)
                 {
                     CambiarAPatrullando();
-                    distanciaDeteccion += 5;
                 }
                 else
                 {
@@ -76,9 +81,10 @@ public class Serpiente : MonoBehaviour
                 }
                 break;
 
+
             case Estado.Patrullando:
                 Patrullar();
-                if (distanciaAlPlayer <= distanciaDeteccion)
+                if (distanciaAlPlayer <= distanciaDeteccion && !p.esInvisible)
                 {
                     estadoActual = Estado.Persiguiendo;
                 }
@@ -172,11 +178,15 @@ public class Serpiente : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player") && cooldownAtaque <= 0f)
         {
-            animator.SetTrigger("IsAttaking");
-            collision.gameObject.GetComponent<Player>()?.TakeDamage(daño);
-            cooldownAtaque = tiempoEntreAtaques;
+            Player p = collision.gameObject.GetComponent<Player>();
+            if (!p.esInvisible)
+            {
+                animator.SetTrigger("IsAttaking");
+                p.TakeDamage(daño);
+                cooldownAtaque = tiempoEntreAtaques;
+            }
+           
         }
     }
-
 
 }

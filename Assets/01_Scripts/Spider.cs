@@ -51,7 +51,7 @@ public class Spider : MonoBehaviour
 
         float distance = Vector2.Distance(transform.position, player.transform.position);
 
-        if (distance <= detectionRange)
+        if (distance <= detectionRange && !Player.Instance.esInvisible)
             DecideAction();
         else
         {
@@ -176,20 +176,19 @@ public class Spider : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, detectionRange);
     }
 
-    //  NUEVO: colisión con el jugador para aplicar daño
-    private void OnTriggerEnter2D(Collider2D collision)
+    void OnCollisionStay2D(Collision2D collision)
     {
         if (!canBite) return;
-
-        if (collision.CompareTag("Player"))
+        if (collision.gameObject.CompareTag("Player"))
         {
-            Player p = collision.GetComponent<Player>();
-            if (p != null)
+            Player p = collision.gameObject.GetComponent<Player>();
+            if (!p.esInvisible)
             {
+                animator.SetTrigger("IsAttaking");
                 p.TakeDamage(biteDamage);
-                Debug.Log(" Araña mordió al jugador por colisión.");
                 StartCoroutine(BiteCooldown());
             }
+
         }
     }
     public void takeDamage(float daño)

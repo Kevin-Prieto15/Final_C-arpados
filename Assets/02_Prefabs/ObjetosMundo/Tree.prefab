@@ -130,6 +130,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   life: 5
   Drop: {fileID: 3781878418559231564, guid: 38ae6e9d1c682d349880bca63a42edef, type: 3}
+  SecondDrop: {fileID: 6288047574391301366, guid: d57101e9a784ed64ab05589b253adb0b, type: 3}
 --- !u!212 &5742645913939624980
 SpriteRenderer:
   m_ObjectHideFlags: 0
