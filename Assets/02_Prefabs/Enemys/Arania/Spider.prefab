@@ -1544,6 +1544,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   trapPrefab: {fileID: 7650834677163579435, guid: 04dd2cd9d5dbc7b44881d29ec35eab46, type: 3}
   player: {fileID: 0}
+  dustEffect: {fileID: 2722914203617295583, guid: e9720375d3783a241ba18deb7ed6cd76, type: 3}
   moveSpeed: 2
   detectionRange: 3
   biteDamage: 10

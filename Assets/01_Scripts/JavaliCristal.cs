@@ -37,6 +37,11 @@ public class JavaliCristal : MonoBehaviour
     private float cooldownTurboRun = 0f;
     private Vector2 direccionTurboRun;
 
+    [Header("Sonidos del Jabalí")]
+    public AudioSource pigSound1; // Asigna AudioClip Pig1
+    public AudioSource pigSound2; // Asigna AudioClip Pig2
+
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -48,6 +53,16 @@ public class JavaliCristal : MonoBehaviour
 
         rb.freezeRotation = true;
         CambiarAPatrullando();
+
+        if (pigSound1 == null || pigSound2 == null)
+        {
+            Debug.LogError("Asigna ambos AudioSource pigSound1 y pigSound2 en el Inspector.");
+            enabled = false;
+            return;
+        }
+
+        InvokeRepeating(nameof(ReproducirSonidoAleatorio), 0f, 3f);
+
     }
 
     void Update()
@@ -211,5 +226,16 @@ public class JavaliCristal : MonoBehaviour
             cooldownAtaque = tiempoEntreAtaques;
         }
     }
+
+    void ReproducirSonidoAleatorio()
+    {
+        int index = Random.Range(0, 2);
+
+        if (index == 0 && !pigSound1.isPlaying)
+            pigSound1.Play();
+        else if (index == 1 && !pigSound2.isPlaying)
+            pigSound2.Play();
+    }
+
 
 }

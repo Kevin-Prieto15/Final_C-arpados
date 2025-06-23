@@ -34,6 +34,14 @@ public class Serpiente : MonoBehaviour
     private enum Estado { Quieto, Persiguiendo, Patrullando }
     private Estado estadoActual = Estado.Quieto;
 
+    [Header("Sonidos")]
+    public AudioSource afkSound;
+    public AudioSource attackSound;
+    public AudioSource killSound;
+
+    private bool isDead = false;
+    private bool lowHealthActive = false;
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -44,6 +52,15 @@ public class Serpiente : MonoBehaviour
             Debug.LogError("No se encontró ningún objeto con tag 'Player'.");
 
         rb.freezeRotation = true;
+        if (afkSound == null || attackSound == null || killSound == null)
+        {
+            Debug.LogError("Faltan AudioSource asignados en Inspector.");
+            enabled = false;
+            return;
+        }
+
+        InvokeRepeating(nameof(HandleSnakeAudio), 0f, 1f); // Chequea cada segundo
+
     }
 
     void Update()
@@ -169,5 +186,46 @@ public class Serpiente : MonoBehaviour
         }
     }
 
+    void HandleSnakeAudio()
+    {
+        if (isDead) return;
+
+        if (vida <= 0f)
+        {
+            killSound.Play();
+            isDead = true;
+            CancelInvoke(nameof(HandleSnakeAudio));
+            return;
+        }
+
+        if (vida <= 6f)
+        {
+            if (!lowHealthActive)
+            {
+                CancelInvoke(nameof(PlayAfkSound));
+                InvokeRepeating(nameof(PlayAttackSound), 0f, 3f);
+                lowHealthActive = true;
+            }
+        }
+        else
+        {
+            if (!afkSound.isPlaying && (estadoActual == Estado.Quieto || estadoActual == Estado.Patrullando))
+            {
+                InvokeRepeating(nameof(PlayAfkSound), 0f, 5f);
+            }
+        }
+    }
+
+    void PlayAfkSound()
+    {
+        if (!afkSound.isPlaying)
+            afkSound.Play();
+    }
+
+    void PlayAttackSound()
+    {
+        if (!attackSound.isPlaying)
+            attackSound.Play();
+    }
 
 }

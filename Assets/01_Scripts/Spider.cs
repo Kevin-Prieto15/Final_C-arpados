@@ -33,14 +33,16 @@ public class Spider : MonoBehaviour
 
     private bool canBite = true;
 
-    private float dustCooldown = 0.05f; // tiempo mínimo entre partículas
+    private float dustCooldown = 0.1f; // o 0.05f si quieres más partículas
     private float dustTimer = 0f;
+
 
 
     private AudioSource hitAudio;
     private AudioSource walkAudio;
     private float walkTimer = 0f;
     private float walkInterval = 3f;
+
 
 
     void Start()
@@ -80,6 +82,10 @@ public class Spider : MonoBehaviour
             isEngagingPlayer = false;
             Patrol();
         }
+
+        if (animator.GetBool("IsWalking"))
+            SpawnDust();
+
     }
 
     void Patrol()
@@ -238,26 +244,23 @@ public class Spider : MonoBehaviour
 
     void SpawnDust()
     {
+        if (dustEffect == null) return;
+
         dustTimer -= Time.deltaTime;
 
-        if (dustTimer <= 0f && dustEffect != null)
+        if (dustTimer <= 0f)
         {
-            Vector3 offset = new Vector3(0, -0.4f, 0); // antes era -0.2f
-            Instantiate(dustEffect, transform.position + offset, Quaternion.identity);
+            Vector3 offset = new Vector3(0, -0.4f, 0);
+            GameObject dust = Instantiate(dustEffect, transform.position + offset, Quaternion.identity);
+            Destroy(dust, 1f); // destruye después de 1 segundo
             dustTimer = dustCooldown;
         }
-
-        walkTimer += Time.deltaTime;
-        if (walkTimer >= walkInterval)
-        {
-            if (walkAudio != null && !walkAudio.isPlaying && !isEngagingPlayer)
-            {
-                walkAudio.Play();
-            }
-            walkTimer = 0f;
-        }
-
     }
+
+
+
+
+
 
 
     public void TakeDamageFromPlayer(float damage)
