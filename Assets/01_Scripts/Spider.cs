@@ -7,6 +7,11 @@ public class Spider : MonoBehaviour
     public GameObject trapPrefab;
     public GameObject player;
 
+
+    [Header("Efectos")]
+    public GameObject dustEffect;
+
+
     [Header("Movimiento y combate")]
     public float moveSpeed = 2f;
     public float detectionRange = 3f;
@@ -28,6 +33,16 @@ public class Spider : MonoBehaviour
 
     private bool canBite = true;
 
+    private float dustCooldown = 0.05f; // tiempo mínimo entre partículas
+    private float dustTimer = 0f;
+
+
+    private AudioSource hitAudio;
+    private AudioSource walkAudio;
+    private float walkTimer = 0f;
+    private float walkInterval = 3f;
+
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -42,6 +57,14 @@ public class Spider : MonoBehaviour
         patrolDirection = Vector2.down;
 
         Patrol();
+
+        AudioSource[] audios = GetComponents<AudioSource>();
+        if (audios.Length >= 2)
+        {
+            hitAudio = audios[0];  // Asumimos primero es golpe
+            walkAudio = audios[1]; // Segundo es caminar
+        }
+
     }
 
     void Update()
@@ -72,6 +95,18 @@ public class Spider : MonoBehaviour
         animator.SetBool("IsWalking", true);
 
         transform.position += (Vector3)(patrolDirection * moveSpeed * Time.deltaTime);
+        SpawnDust();
+
+        walkTimer += Time.deltaTime;
+        if (walkTimer >= walkInterval)
+        {
+            if (walkAudio != null && !walkAudio.isPlaying && !isEngagingPlayer)
+            {
+                walkAudio.Play();
+            }
+            walkTimer = 0f;
+        }
+
     }
 
     void DecideAction()
@@ -103,6 +138,8 @@ public class Spider : MonoBehaviour
         {
             Vector2 dir = (transform.position - player.transform.position).normalized;
             transform.position += (Vector3)(dir * moveSpeed * Time.deltaTime);
+            SpawnDust();
+
 
             UpdateDirection(player.transform.position - transform.position);
 
@@ -198,4 +235,40 @@ public class Spider : MonoBehaviour
         yield return new WaitForSeconds(biteCooldown);
         canBite = true;
     }
+
+    void SpawnDust()
+    {
+        dustTimer -= Time.deltaTime;
+
+        if (dustTimer <= 0f && dustEffect != null)
+        {
+            Vector3 offset = new Vector3(0, -0.4f, 0); // antes era -0.2f
+            Instantiate(dustEffect, transform.position + offset, Quaternion.identity);
+            dustTimer = dustCooldown;
+        }
+
+        walkTimer += Time.deltaTime;
+        if (walkTimer >= walkInterval)
+        {
+            if (walkAudio != null && !walkAudio.isPlaying && !isEngagingPlayer)
+            {
+                walkAudio.Play();
+            }
+            walkTimer = 0f;
+        }
+
+    }
+
+
+    public void TakeDamageFromPlayer(float damage)
+    {
+        if (hitAudio != null && !hitAudio.isPlaying)
+        {
+            hitAudio.Play();
+        }
+
+        Debug.Log("La araña fue golpeada por el jugador");
+    }
+
+
 }

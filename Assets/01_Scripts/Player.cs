@@ -81,6 +81,12 @@ public class Player : MonoBehaviour
     float ToolTimer = 0;
     bool ToolAttack=false;
 
+
+
+
+
+
+
     // ╔═ Unity Callbacks ══════════════════════════════════════════╗
     private void Awake()
     {
@@ -107,6 +113,9 @@ public class Player : MonoBehaviour
             staminaSlider.minValue = 0f;
             staminaSlider.value = currentStamina;
         }
+        tieneArma = true;
+        EquipWeapon(0); // Asegura que isAxe=true y asigna el collider del arma
+
     }
 
     private void Update()
@@ -144,6 +153,7 @@ public class Player : MonoBehaviour
                     currentWeapon.enabled = false;
             }
         }
+
     }
 
 
@@ -250,6 +260,8 @@ public class Player : MonoBehaviour
 
                         CancelInvoke(nameof(BorrarTextoDebug));
                         Invoke(nameof(BorrarTextoDebug), 2f);
+
+
                     }
                     break;
                 }
