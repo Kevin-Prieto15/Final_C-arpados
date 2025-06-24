@@ -4135,9 +4135,21 @@ PrefabInstance:
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 2338267458509840234, guid: 059313eecf91d144b91dfa87c6b59b1d, type: 3}
+      propertyPath: hit1Clip
+      value: 
+      objectReference: {fileID: 8300000, guid: 8fcfbff0ede31024080ab252e3f61de8, type: 3}
+    - target: {fileID: 2338267458509840234, guid: 059313eecf91d144b91dfa87c6b59b1d, type: 3}
+      propertyPath: hit2Clip
+      value: 
+      objectReference: {fileID: 8300000, guid: b1daaf5ed4977da4592557aa2128b397, type: 3}
+    - target: {fileID: 2338267458509840234, guid: 059313eecf91d144b91dfa87c6b59b1d, type: 3}
       propertyPath: textoSed
       value: 
       objectReference: {fileID: 1967243966}
+    - target: {fileID: 2338267458509840234, guid: 059313eecf91d144b91dfa87c6b59b1d, type: 3}
+      propertyPath: deathClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 1bcda535fa5b6644d87825840b58fb05, type: 3}
     - target: {fileID: 2338267458509840234, guid: 059313eecf91d144b91dfa87c6b59b1d, type: 3}
       propertyPath: healthText
       value: 
