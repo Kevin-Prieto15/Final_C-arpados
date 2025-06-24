@@ -221,8 +221,8 @@ MonoBehaviour:
   tiempoEntreAtaques: 1
   tiempoMovimientoAleatorio: {x: 2, y: 5}
   tiempoQuietoAleatorio: {x: 2, y: 5}
-  pigSound1: {fileID: 0}
-  pigSound2: {fileID: 0}
+  pigSound1: {fileID: 7676938434782044846}
+  pigSound2: {fileID: -5145659174650555058}
 --- !u!50 &8729000143347095874
 Rigidbody2D:
   serializedVersion: 4

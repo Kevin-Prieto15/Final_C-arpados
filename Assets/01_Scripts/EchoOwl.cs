@@ -30,6 +30,11 @@ public class EchoOwl : MonoBehaviour
     private bool playerDetected = false;
     private float orbitAngle = 0f;
 
+   
+
+    [Header("Audio")]
+    public AudioSource buhoAudio;
+
     void Start()
     {
         if (buhoVisual != null)
@@ -43,7 +48,10 @@ public class EchoOwl : MonoBehaviour
         SetTransparency(transparency);
         if (animator != null)
             animator.SetBool("IsFlying", false);
+
+        // Ya no es necesario hacer buhoAudio.Play() si usas Play On Awake Att Yo
     }
+
 
     void Update()
     {
@@ -63,6 +71,9 @@ public class EchoOwl : MonoBehaviour
                 {
                     isAttacking = true;
                     animator.SetBool("IsFlying", true);
+
+                    //  Reproduce sonido solo una vez al comenzar a volar
+                    
                 }
             }
             else
@@ -81,11 +92,9 @@ public class EchoOwl : MonoBehaviour
                 return;
             }
 
-            // Volar en círculo alrededor del jugador
-            // Volar directamente sobre el jugador (por encima de su cabeza)
+            // Volar directamente sobre el jugador
             Vector2 targetPosition = new Vector2(player.transform.position.x, player.transform.position.y + 2.5f);
             transform.position = Vector2.Lerp(transform.position, targetPosition, orbitSpeed * Time.deltaTime);
-
 
             attackTimer += Time.deltaTime;
             if (attackTimer >= attackCooldown)
@@ -96,6 +105,7 @@ public class EchoOwl : MonoBehaviour
             }
         }
     }
+
 
     void FireProjectile()
 {

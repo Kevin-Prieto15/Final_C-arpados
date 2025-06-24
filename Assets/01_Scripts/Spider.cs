@@ -37,11 +37,23 @@ public class Spider : MonoBehaviour
     private float dustTimer = 0f;
 
 
+    public AudioClip Spider_Sound;
+    public AudioClip Spider_Walk;
 
-    private AudioSource hitAudio;
-    private AudioSource walkAudio;
+    
+    [Header("Sonidos")]
+    public AudioSource hitAudio;
+    public AudioSource walkAudio;
+
     private float walkTimer = 0f;
     private float walkInterval = 3f;
+
+
+    [Header("Vida")]
+    public float maxHealth = 3f;
+    private float currentHealth;
+    private bool isDead = false;
+
 
 
 
@@ -60,14 +72,18 @@ public class Spider : MonoBehaviour
 
         Patrol();
 
-        AudioSource[] audios = GetComponents<AudioSource>();
-        if (audios.Length >= 2)
+        // Cargar los dos AudioSources correctamente
+        AudioSource[] sources = GetComponents<AudioSource>();
+        foreach (AudioSource src in sources)
         {
-            hitAudio = audios[0];  // Asumimos primero es golpe
-            walkAudio = audios[1]; // Segundo es caminar
+            if (src.clip == Spider_Sound) hitAudio = src;
+            else if (src.clip == Spider_Walk) walkAudio = src;
         }
 
+        currentHealth = maxHealth;
     }
+
+
 
     void Update()
     {
@@ -86,7 +102,19 @@ public class Spider : MonoBehaviour
         if (animator.GetBool("IsWalking"))
             SpawnDust();
 
+        // Reproduce Spider_Walk cada 3 segundos, si no se está reproduciendo ya
+        walkTimer += Time.deltaTime;
+        if (walkTimer >= walkInterval)
+        {
+            if (walkAudio != null && !walkAudio.isPlaying)
+            {
+                walkAudio.Play();
+            }
+            walkTimer = 0f;
+        }
     }
+
+
 
     void Patrol()
     {
@@ -102,16 +130,6 @@ public class Spider : MonoBehaviour
 
         transform.position += (Vector3)(patrolDirection * moveSpeed * Time.deltaTime);
         SpawnDust();
-
-        walkTimer += Time.deltaTime;
-        if (walkTimer >= walkInterval)
-        {
-            if (walkAudio != null && !walkAudio.isPlaying && !isEngagingPlayer)
-            {
-                walkAudio.Play();
-            }
-            walkTimer = 0f;
-        }
 
     }
 
@@ -265,12 +283,28 @@ public class Spider : MonoBehaviour
 
     public void TakeDamageFromPlayer(float damage)
     {
-        if (hitAudio != null && !hitAudio.isPlaying)
-        {
-            hitAudio.Play();
-        }
+        if (isDead) return;
 
-        Debug.Log("La araña fue golpeada por el jugador");
+        if (hitAudio != null && !hitAudio.isPlaying)
+            hitAudio.Play();
+
+        currentHealth -= damage;
+        Debug.Log($"Araña recibió {damage} de daño. Vida restante: {currentHealth}");
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        isDead = true;
+        animator.SetTrigger("Die");
+        Debug.Log(" La araña ha muerto.");
+
+        // Opcional: destruir o desactivar
+        Destroy(gameObject, 1.5f); // espera 1.5s para dejar ver animación
     }
 
 
