@@ -4,10 +4,20 @@ using UnityEngine;
 
 public class DropsObjetos : MonoBehaviour
 {
-    public float life = 3f;
+    [Header("Vida del objeto destructible")]
+    public float life = 5f;
+
+    [Header("Prefab que se dropea al morir")]
     public GameObject Drop;
     public GameObject SecondDrop;
 
+    [Header("Prefab de partï¿½culas de corte (cada golpe)")]
+    public GameObject particulasChop;
+
+    [Header("Offset personalizado para las partï¿½culas")]
+    public Vector3 particulaOffset = Vector3.zero;
+
+    private AudioSource audioSource;
     public float tiempoRespawn = 300f;
 
     private SpriteRenderer[] sprites;
@@ -20,6 +30,7 @@ public class DropsObjetos : MonoBehaviour
     {
         sprites = GetComponentsInChildren<SpriteRenderer>(true);
         colliders = GetComponentsInChildren<Collider2D>(true);
+        audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -40,6 +51,23 @@ public class DropsObjetos : MonoBehaviour
 
         life -= damage;
 
+        if (oneDrop)
+        {
+            AudioClip piedraSound = Resources.Load<AudioClip>("Stone");
+            if (piedraSound != null)
+            {
+                AudioSource.PlayClipAtPoint(piedraSound, transform.position);
+            }
+        }
+        else if (audioSource != null && audioSource.clip != null)
+        {
+            audioSource.Play();
+        }
+        if (particulasChop != null)
+        {
+            Instantiate(particulasChop, transform.position + particulaOffset, Quaternion.identity);
+        }
+
         if (life <= 0)
         {
             // Dropea objetos
@@ -56,7 +84,7 @@ public class DropsObjetos : MonoBehaviour
             isDestroyed = true;
             tiempoActual = 0f;
 
-            // Sincroniza física por si acaso
+            // Sincroniza fï¿½sica por si acaso
             Physics2D.SyncTransforms();
         }
     }
@@ -70,4 +98,5 @@ public class DropsObjetos : MonoBehaviour
         isDestroyed = false;
         tiempoActual = 0f;
     }
+
 }

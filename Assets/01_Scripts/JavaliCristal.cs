@@ -7,9 +7,9 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
 {
     [Header("Stats")]
     public float vida = 30;
-    public int daño = 5;
+    public int daï¿½o = 5;
 
-    [Header("Movimiento y Animación")]
+    [Header("Movimiento y Animaciï¿½n")]
     public float velocidad = 3f;
     public float distanciaDeteccion = 5f;
     public float distanciaAbandono = 8f;
@@ -46,6 +46,11 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
     {
         spawner = s;
     }
+    [Header("Sonidos del Jabalï¿½")]
+    public AudioSource pigSound1; // Asigna AudioClip Pig1
+    public AudioSource pigSound2; // Asigna AudioClip Pig2
+
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -54,10 +59,20 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
         rb = GetComponent<Rigidbody2D>();
 
         if (player == null)
-            Debug.LogError("No se encontró ningún objeto con tag 'Player'.");
+            Debug.LogError("No se encontrï¿½ ningï¿½n objeto con tag 'Player'.");
 
         rb.freezeRotation = true;
         CambiarAPatrullando();
+
+        if (pigSound1 == null || pigSound2 == null)
+        {
+            Debug.LogError("Asigna ambos AudioSource pigSound1 y pigSound2 en el Inspector.");
+            enabled = false;
+            return;
+        }
+
+        InvokeRepeating(nameof(ReproducirSonidoAleatorio), 0f, 3f);
+
     }
 
     void Update()
@@ -82,7 +97,7 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
                     }
                     else
                     {
-                        estadoActual = Estado.Persiguiendo; // Aquí lo forzamos a seguirte si el turbo no está listo pero estás cerca
+                        estadoActual = Estado.Persiguiendo; // Aquï¿½ lo forzamos a seguirte si el turbo no estï¿½ listo pero estï¿½s cerca
                     }
                 }
                 break;
@@ -219,9 +234,9 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
         animator.SetFloat("Speed", 0);
     }
 
-    public void takeDamage(float daño)
+    public void takeDamage(float daï¿½o)
     {
-        vida -= daño;
+        vida -= daï¿½o;
         if (vida <= 0)
         {
             spawner.AvisarMuerte();
@@ -239,11 +254,22 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
             if (!p.esInvisible)
             {
                 animator.SetTrigger("IsAttaking");
-                p.TakeDamage(daño);
+                p.TakeDamage(daï¿½o);
                 cooldownAtaque = tiempoEntreAtaques;
             }
 
         }
     }
+
+    void ReproducirSonidoAleatorio()
+    {
+        int index = Random.Range(0, 2);
+
+        if (index == 0 && !pigSound1.isPlaying)
+            pigSound1.Play();
+        else if (index == 1 && !pigSound2.isPlaying)
+            pigSound2.Play();
+    }
+
 
 }

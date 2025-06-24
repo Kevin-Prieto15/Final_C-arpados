@@ -91,6 +91,16 @@ public class Player : MonoBehaviour
     float ToolTimer = 0;
     bool ToolAttack=false;
 
+
+    [Header("Audio de Daño y Muerte")]
+    public AudioClip hit1Clip;
+    public AudioClip hit2Clip;
+    public AudioClip deathClip;
+    private AudioSource damageAudio;
+
+
+
+
     // ╔═ Unity Callbacks ══════════════════════════════════════════╗
     private void Awake()
     {
@@ -98,6 +108,9 @@ public class Player : MonoBehaviour
         // Obtener componentes
         rb = GetComponent<Rigidbody2D>();
         stepAudio = GetComponent<AudioSource>();
+        damageAudio = gameObject.AddComponent<AudioSource>();
+
+
 
         stepAudio.Stop();
 
@@ -119,6 +132,10 @@ public class Player : MonoBehaviour
         }
 
         UpdateHealthBar();
+        tieneArma = true;
+        EquipWeapon(0); // Asegura que isAxe=true y asigna el collider del arma
+
+
 
     }
 
@@ -266,7 +283,7 @@ public class Player : MonoBehaviour
                     }
 
                     // Manejar ataque con F
-                    if (tecla == KeyCode.F && (isAxe||isPickaxe||isLance))
+                    if (tecla == KeyCode.F && (isAxe || isPickaxe || isLance))
                     {
                         if (currentWeapon == null)
                         {
@@ -274,6 +291,7 @@ public class Player : MonoBehaviour
                             return;
                         }
 
+                        // Activar animación de ataque según arma equipada
                         if (isAxe)
                             currentAnimator.SetTrigger("AxeAttack");
                         else if (isLance)
@@ -281,7 +299,26 @@ public class Player : MonoBehaviour
                         else if (isPickaxe)
                             currentAnimator.SetTrigger("PickaxeAttack");
 
+                        // Activar collider del arma
                         currentWeapon.enabled = true;
+
+                        // Detectar colisiones del arma
+                        Bounds bounds = currentWeapon.bounds;
+                        Vector2 center = bounds.center;
+                        Vector2 size = bounds.size;
+                        Collider2D[] hits = Physics2D.OverlapBoxAll(center, size, 0f);
+
+                        foreach (Collider2D hit in hits)
+                        {
+                            if (hit == null) continue;
+
+                            Spider spider = hit.GetComponent<Spider>();
+                            if (spider != null)
+                            {
+                                spider.TakeDamageFromPlayer(1f); // Aplica daño
+                            }
+                        }
+
                         ToolTimer = 0f;
                         ToolAttack = true;
 
@@ -289,6 +326,7 @@ public class Player : MonoBehaviour
                         Invoke(nameof(BorrarTextoDebug), 2f);
                     }
                     break;
+
                 }
             }
 
@@ -722,6 +760,11 @@ public class Player : MonoBehaviour
             }
         }
     }
+    public bool EstaInvisible()
+    {
+        return esInvisible;
+    }
+
 
 
     public void TakeDamage(float damage)
@@ -738,6 +781,12 @@ public class Player : MonoBehaviour
         Debug.Log($"Recibió {damage} de daño. Vida restante: {currentHealth}");
 
         UpdateHealthBar();
+        // Reproducir sonido aleatorio de daño
+        if (damageAudio != null)
+        {
+            AudioClip clip = (Random.value > 0.5f) ? hit1Clip : hit2Clip;
+            damageAudio.PlayOneShot(clip);
+        }
 
         if (currentHealth <= 0f)
         {
@@ -747,12 +796,19 @@ public class Player : MonoBehaviour
     }
 
 
+
     private void Die()
     {
         isDead = true;
         Debug.Log("🐱 El michi ha muerto.");
         rb.velocity = Vector2.zero;
         enabled = false;
+
+        if (damageAudio != null && deathClip != null)
+        {
+            damageAudio.PlayOneShot(deathClip);
+        }
+
     }
 
     // ╔═ Métodos de Efectos de Estado (Slow) ═══════════════════════════╗

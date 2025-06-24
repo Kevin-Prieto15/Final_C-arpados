@@ -8,6 +8,11 @@ public class Spider : MonoBehaviour, IHaveSpawner
     public GameObject trapPrefab;
     public GameObject player;
 
+
+    [Header("Efectos")]
+    public GameObject dustEffect;
+
+
     [Header("Movimiento y combate")]
     public float moveSpeed = 2f;
     public float detectionRange = 3f;
@@ -36,6 +41,30 @@ public class Spider : MonoBehaviour, IHaveSpawner
     {
         spawner = s;
     }
+    private float dustCooldown = 0.1f; // o 0.05f si quieres mï¿½s partï¿½culas
+    private float dustTimer = 0f;
+
+
+    public AudioClip Spider_Sound;
+    public AudioClip Spider_Walk;
+
+    
+    [Header("Sonidos")]
+    public AudioSource hitAudio;
+    public AudioSource walkAudio;
+
+    private float walkTimer = 0f;
+    private float walkInterval = 3f;
+
+
+    [Header("Vida")]
+    public float maxHealth = 3f;
+    private float currentHealth;
+    private bool isDead = false;
+
+
+
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -50,7 +79,19 @@ public class Spider : MonoBehaviour, IHaveSpawner
         patrolDirection = Vector2.down;
 
         Patrol();
+
+        // Cargar los dos AudioSources correctamente
+        AudioSource[] sources = GetComponents<AudioSource>();
+        foreach (AudioSource src in sources)
+        {
+            if (src.clip == Spider_Sound) hitAudio = src;
+            else if (src.clip == Spider_Walk) walkAudio = src;
+        }
+
+        currentHealth = maxHealth;
     }
+
+
 
     void Update()
     {
@@ -65,7 +106,23 @@ public class Spider : MonoBehaviour, IHaveSpawner
             isEngagingPlayer = false;
             Patrol();
         }
+
+        if (animator.GetBool("IsWalking"))
+            SpawnDust();
+
+        // Reproduce Spider_Walk cada 3 segundos, si no se estï¿½ reproduciendo ya
+        walkTimer += Time.deltaTime;
+        if (walkTimer >= walkInterval)
+        {
+            if (walkAudio != null && !walkAudio.isPlaying)
+            {
+                walkAudio.Play();
+            }
+            walkTimer = 0f;
+        }
     }
+
+
 
     void Patrol()
     {
@@ -80,6 +137,8 @@ public class Spider : MonoBehaviour, IHaveSpawner
         animator.SetBool("IsWalking", true);
 
         transform.position += (Vector3)(patrolDirection * moveSpeed * Time.deltaTime);
+        SpawnDust();
+
     }
 
     void DecideAction()
@@ -111,6 +170,8 @@ public class Spider : MonoBehaviour, IHaveSpawner
         {
             Vector2 dir = (transform.position - player.transform.position).normalized;
             transform.position += (Vector3)(dir * moveSpeed * Time.deltaTime);
+            SpawnDust();
+
 
             UpdateDirection(player.transform.position - transform.position);
 
@@ -198,9 +259,9 @@ public class Spider : MonoBehaviour, IHaveSpawner
 
         }
     }
-    public void takeDamage(float daño)
+    public void takeDamage(float daï¿½o)
     {
-        vida -= daño;
+        vida -= daï¿½o;
         if (vida <= 0)
         {
             spawner.AvisarMuerte();
@@ -214,4 +275,53 @@ public class Spider : MonoBehaviour, IHaveSpawner
         yield return new WaitForSeconds(biteCooldown);
         canBite = true;
     }
+
+    void SpawnDust()
+    {
+        if (dustEffect == null) return;
+
+        dustTimer -= Time.deltaTime;
+
+        if (dustTimer <= 0f)
+        {
+            Vector3 offset = new Vector3(0, -0.4f, 0);
+            GameObject dust = Instantiate(dustEffect, transform.position + offset, Quaternion.identity);
+            Destroy(dust, 1f); // destruye despuï¿½s de 1 segundo
+            dustTimer = dustCooldown;
+        }
+    }
+
+
+
+
+
+
+
+    public void TakeDamageFromPlayer(float damage)
+    {
+        if (isDead) return;
+
+        if (hitAudio != null && !hitAudio.isPlaying)
+            hitAudio.Play();
+
+        currentHealth -= damage;
+        Debug.Log($"Araï¿½a recibiï¿½ {damage} de daï¿½o. Vida restante: {currentHealth}");
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        isDead = true;
+        animator.SetTrigger("Die");
+        Debug.Log(" La araï¿½a ha muerto.");
+
+        // Opcional: destruir o desactivar
+        Destroy(gameObject, 1.5f); // espera 1.5s para dejar ver animaciï¿½n
+    }
+
+
 }

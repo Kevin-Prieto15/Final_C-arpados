@@ -8,10 +8,10 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
 {
     [Header("Stats")]
     public float vida = 30f;
-    public float daño = 5f;
+    public float daï¿½o = 5f;
 
 
-    [Header("Movimiento y Animación")]
+    [Header("Movimiento y Animaciï¿½n")]
     public float velocidad = 3f;
     public float distanciaDeteccion = 5f;
     public float distanciaAbandono = 8f;
@@ -42,6 +42,14 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
     {
         spawner = s;
     }
+    [Header("Sonidos")]
+    public AudioSource afkSound;
+    public AudioSource attackSound;
+    public AudioSource killSound;
+
+    private bool isDead = false;
+    private bool lowHealthActive = false;
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -50,9 +58,18 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
         rb = GetComponent<Rigidbody2D>();
 
         if (player == null)
-            Debug.LogError("No se encontró ningún objeto con tag 'Player'.");
+            Debug.LogError("No se encontrï¿½ ningï¿½n objeto con tag 'Player'.");
 
         rb.freezeRotation = true;
+        if (afkSound == null || attackSound == null || killSound == null)
+        {
+            Debug.LogError("Faltan AudioSource asignados en Inspector.");
+            enabled = false;
+            return;
+        }
+
+        InvokeRepeating(nameof(HandleSnakeAudio), 0f, 1f); // Chequea cada segundo
+
     }
 
     void Update()
@@ -172,9 +189,9 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
         animator.SetFloat("Speed", 0);
     }
 
-    public void takeDamage(float daño)
+    public void takeDamage(float daï¿½o)
     {
-        vida -= daño;
+        vida -= daï¿½o;
         if (vida <= 0)
         {
             spawner.AvisarMuerte();
@@ -191,11 +208,53 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
             if (!p.esInvisible)
             {
                 animator.SetTrigger("IsAttaking");
-                p.TakeDamage(daño);
+                p.TakeDamage(daï¿½o);
                 cooldownAtaque = tiempoEntreAtaques;
             }
            
         }
+    }
+
+    void HandleSnakeAudio()
+    {
+        if (isDead) return;
+
+        if (vida <= 0f)
+        {
+            killSound.Play();
+            isDead = true;
+            CancelInvoke(nameof(HandleSnakeAudio));
+            return;
+        }
+
+        if (vida <= 6f)
+        {
+            if (!lowHealthActive)
+            {
+                CancelInvoke(nameof(PlayAfkSound));
+                InvokeRepeating(nameof(PlayAttackSound), 0f, 3f);
+                lowHealthActive = true;
+            }
+        }
+        else
+        {
+            if (!afkSound.isPlaying && (estadoActual == Estado.Quieto || estadoActual == Estado.Patrullando))
+            {
+                InvokeRepeating(nameof(PlayAfkSound), 0f, 5f);
+            }
+        }
+    }
+
+    void PlayAfkSound()
+    {
+        if (!afkSound.isPlaying)
+            afkSound.Play();
+    }
+
+    void PlayAttackSound()
+    {
+        if (!attackSound.isPlaying)
+            attackSound.Play();
     }
 
 }

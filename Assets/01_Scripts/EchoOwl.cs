@@ -46,6 +46,11 @@ public class EchoOwl : MonoBehaviour, IHaveSpawner
     {
         spawner = s;
     }
+   
+
+    [Header("Audio")]
+    public AudioSource buhoAudio;
+
     void Start()
     {
         if (buhoVisual != null)
@@ -59,7 +64,10 @@ public class EchoOwl : MonoBehaviour, IHaveSpawner
         SetTransparency(transparency);
         if (animator != null)
             animator.SetBool("IsFlying", true); // Siempre inicia volando
+
+        // Ya no es necesario hacer buhoAudio.Play() si usas Play On Awake Att Yo
     }
+
 
     void Update()
     {
@@ -76,7 +84,15 @@ public class EchoOwl : MonoBehaviour, IHaveSpawner
 
             if (!isAttacking && timeNearPlayer >= timeToStartAttacking)
             {
-                isAttacking = true;
+                timeNearPlayer += Time.deltaTime;
+                if (timeNearPlayer >= timeToStartAttacking)
+                {
+                    isAttacking = true;
+                    animator.SetBool("IsFlying", true);
+
+                    //  Reproduce sonido solo una vez al comenzar a volar
+                    
+                }
             }
 
             if (isAttacking)

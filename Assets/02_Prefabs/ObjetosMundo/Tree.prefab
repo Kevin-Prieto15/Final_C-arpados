@@ -133,6 +133,7 @@ MonoBehaviour:
   SecondDrop: {fileID: 6288047574391301366, guid: d57101e9a784ed64ab05589b253adb0b, type: 3}
   tiempoRespawn: 300
   oneDrop: 0
+  particulasChop: {fileID: 2161951579890727309, guid: dbf7d4e968343de4d8b69f4813d24217, type: 3}
 --- !u!212 &5742645913939624980
 SpriteRenderer:
   m_ObjectHideFlags: 0
