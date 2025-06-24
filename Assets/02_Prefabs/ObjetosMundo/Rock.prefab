@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8480135790454655064}
   m_Layer: 0
   m_Name: Rock
-  m_TagString: Untagged
+  m_TagString: Rock
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -46,8 +46,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce78eae69e47fb64d8721e6ad251fb21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  life: 5
+  life: 15
   Drop: {fileID: 4280558689761389697, guid: ef1500eca8355864da00faaf5c5525be, type: 3}
+  SecondDrop: {fileID: 0}
+  tiempoRespawn: 300
+  oneDrop: 1
 --- !u!212 &2864812322242476062
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -87,7 +90,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 7482667652216324306, guid: 48e93eef0688c4a259cb0eddcd8661f7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -205,7 +208,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 7d051aa525d8dcc45b18d946c1abfdd3, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

@@ -136,7 +136,7 @@ MonoBehaviour:
   detectionRange: 5
   timeToStartAttacking: 1
   attackCooldown: 1
-  vida: 50
+  vida: 25
   orbitRadius: 2
   orbitSpeed: 2
   viewFront: {fileID: 1041497124162170910}
@@ -147,6 +147,8 @@ MonoBehaviour:
   transparency: 0.5
   randomFlyRadius: 2
   randomFlyInterval: 3
+  Drop: {fileID: 2915929634409052527, guid: 5910c3f10c5d51545a65f0e81b2583e6, type: 3}
+  Drop2: {fileID: 3781878418559231564, guid: 38ae6e9d1c682d349880bca63a42edef, type: 3}
 --- !u!50 &1041497123038263870
 Rigidbody2D:
   serializedVersion: 4

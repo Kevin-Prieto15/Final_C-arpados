@@ -31,7 +31,7 @@ public class Player : MonoBehaviour
 
     public UnityEngine.UI.Image estaminaFill;
     public Text estaminaText;
-
+    private float timerBajarVida = 0f;
 
 
 
@@ -424,6 +424,22 @@ public class Player : MonoBehaviour
             timerSed = 0f;
         }
 
+        // 👇 BAJAR VIDA SI SED O HAMBRE = 100
+        if (sed >= 100f || hambre >= 100f)
+        {
+            timerBajarVida += Time.deltaTime;
+            if (timerBajarVida >= 1f)
+            {
+                currentHealth -= 1f; // 
+                timerBajarVida = 0f;
+            }
+        }
+        else
+        {
+            // Si no está en 100, el contador se resetea
+            timerBajarVida = 0f;
+        }
+
         // Actualizar texto de hambre
         if (textoHambre != null)
             textoHambre.text = $"Hambre {Mathf.RoundToInt(hambre)}%";
@@ -431,7 +447,6 @@ public class Player : MonoBehaviour
         // Actualizar texto de sed
         if (textoSed != null)
             textoSed.text = $"Sed {Mathf.RoundToInt(sed)}%";
-
     }
 
     public void TomarAgua(float cantidad)

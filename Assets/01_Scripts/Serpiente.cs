@@ -1,9 +1,10 @@
+using Assets._01_Scripts;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
-public class Serpiente : MonoBehaviour
+public class Serpiente : MonoBehaviour, IHaveSpawner
 {
     [Header("Stats")]
     public float vida = 30f;
@@ -34,7 +35,13 @@ public class Serpiente : MonoBehaviour
 
     private enum Estado { Quieto, Persiguiendo, Patrullando }
     private Estado estadoActual = Estado.Quieto;
+    private Spawner spawner;
+    public GameObject Drop;
 
+    public void SetSpawner(Spawner s)
+    {
+        spawner = s;
+    }
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -170,6 +177,8 @@ public class Serpiente : MonoBehaviour
         vida -= daño;
         if (vida <= 0)
         {
+            spawner.AvisarMuerte();
+            Instantiate(Drop, transform.position, Quaternion.identity);
             Destroy(gameObject);
         }
     }

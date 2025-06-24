@@ -211,7 +211,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ad80f8b68fbe6b4299e8db259c2517b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  vida: 30
+  vida: 60
   "da\xF1o": 5
   velocidad: 6
   distanciaDeteccion: 10
@@ -219,6 +219,7 @@ MonoBehaviour:
   tiempoEntreAtaques: 1
   tiempoMovimientoAleatorio: {x: 2, y: 5}
   tiempoQuietoAleatorio: {x: 2, y: 5}
+  Drop: {fileID: 2915929634409052527, guid: 5910c3f10c5d51545a65f0e81b2583e6, type: 3}
 --- !u!50 &8729000143347095874
 Rigidbody2D:
   serializedVersion: 4

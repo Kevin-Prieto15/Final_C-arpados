@@ -34,22 +34,22 @@ public class Herramientas : MonoBehaviour
         else if (collision.gameObject.CompareTag("Spider") && isLance)
         {
             Spider DP = collision.gameObject.GetComponent<Spider>();
-            DP.takeDamage(damage * 5);
+            DP.takeDamage(damage);
         }
-        else if (collision.gameObject.CompareTag("Serpiente") && isLance)
+        else if (collision.gameObject.CompareTag("Serpiente") && isAxe)
         {
             Serpiente DP = collision.gameObject.GetComponent<Serpiente>();
-            DP.takeDamage(damage * 5);
+            DP.takeDamage(damage*2);
         }
-        else if (collision.gameObject.CompareTag("Jabali") && isLance)
+        else if (collision.gameObject.CompareTag("Jabali") && isPickaxe)
         {
             JavaliCristal DP = collision.gameObject.GetComponent<JavaliCristal>();
-            DP.takeDamage(damage*5);
+            DP.takeDamage(damage*2);
         }
         else if (collision.gameObject.CompareTag("Owl") && isLance)
         {
             EchoOwl DP = collision.gameObject.GetComponent<EchoOwl>();
-            DP.takeDamage(damage * 5);
+            DP.takeDamage(damage);
         }
     }
 }

@@ -128,9 +128,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce78eae69e47fb64d8721e6ad251fb21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  life: 5
+  life: 15
   Drop: {fileID: 3781878418559231564, guid: 38ae6e9d1c682d349880bca63a42edef, type: 3}
   SecondDrop: {fileID: 6288047574391301366, guid: d57101e9a784ed64ab05589b253adb0b, type: 3}
+  tiempoRespawn: 300
+  oneDrop: 0
 --- !u!212 &5742645913939624980
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -170,7 +172,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 7482667652216324306, guid: 48e93eef0688c4a259cb0eddcd8661f7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -207,14 +209,14 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -1.2096069, y: -0.17725146}
-      - {x: -1.4564266, y: -0.5995958}
+    - - {x: -0.62980103, y: -0.14845622}
+      - {x: -0.63875175, y: -0.64758784}
       - {x: -0.6106889, y: -0.997979}
       - {x: -0.5573356, y: -1.2272546}
       - {x: -0.005748987, y: -1.3478527}
       - {x: 0.5729139, y: -1.1760665}
       - {x: 0.5997696, y: -0.9461972}
-      - {x: 1.4977473, y: -0.5614774}
-      - {x: 1.1394656, y: -0.2367931}
+      - {x: 0.6057385, y: -0.61906785}
+      - {x: 0.6488607, y: -0.16960427}
       - {x: 0.62062025, y: -0.14754197}
       - {x: 0.0063610077, y: -0.0776557}

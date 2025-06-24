@@ -1,7 +1,8 @@
 using UnityEngine;
 using System.Collections;
+using Assets._01_Scripts;
 
-public class Spider : MonoBehaviour
+public class Spider : MonoBehaviour, IHaveSpawner
 {
     [Header("Referencias")]
     public GameObject trapPrefab;
@@ -28,7 +29,13 @@ public class Spider : MonoBehaviour
     private Coroutine currentActionCoroutine = null;
 
     private bool canBite = true;
+    private Spawner spawner;
+    public GameObject drop;
 
+    public void SetSpawner(Spawner s)
+    {
+        spawner = s;
+    }
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -196,6 +203,8 @@ public class Spider : MonoBehaviour
         vida -= daño;
         if (vida <= 0)
         {
+            spawner.AvisarMuerte();
+            Instantiate(drop, transform.position, Quaternion.identity);
             Destroy(gameObject);
         }
     }

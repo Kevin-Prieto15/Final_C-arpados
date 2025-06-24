@@ -1,8 +1,9 @@
+using Assets._01_Scripts;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class JavaliCristal : MonoBehaviour
+public class JavaliCristal : MonoBehaviour, IHaveSpawner
 {
     [Header("Stats")]
     public float vida = 30;
@@ -37,7 +38,14 @@ public class JavaliCristal : MonoBehaviour
     private float timerTurboRun = 0f;
     private float cooldownTurboRun = 0f;
     private Vector2 direccionTurboRun;
+    private Spawner spawner;
 
+    public GameObject Drop;
+
+    public void SetSpawner(Spawner s)
+    {
+        spawner = s;
+    }
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -216,6 +224,9 @@ public class JavaliCristal : MonoBehaviour
         vida -= daño;
         if (vida <= 0)
         {
+            spawner.AvisarMuerte();
+            Instantiate(Drop, transform.position, Quaternion.identity);
+            Instantiate(Drop, transform.position, Quaternion.identity);
             Destroy(gameObject);
         }
     }

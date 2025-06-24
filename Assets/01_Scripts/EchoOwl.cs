@@ -1,6 +1,7 @@
+using Assets._01_Scripts;
 using UnityEngine;
 
-public class EchoOwl : MonoBehaviour
+public class EchoOwl : MonoBehaviour, IHaveSpawner
 {
     [Header("Referencias")]
     public GameObject player;
@@ -37,7 +38,14 @@ public class EchoOwl : MonoBehaviour
 
     private Vector2 randomTarget;
     private float randomFlyTimer = 0f;
+    private Spawner spawner;
+    public GameObject Drop;
+    public GameObject Drop2;
 
+    public void SetSpawner(Spawner s)
+    {
+        spawner = s;
+    }
     void Start()
     {
         if (buhoVisual != null)
@@ -154,6 +162,9 @@ public class EchoOwl : MonoBehaviour
         vida -= dano;
         if (vida <= 0)
         {
+            spawner.AvisarMuerte();
+            Instantiate(Drop, transform.position, Quaternion.identity);
+            Instantiate(Drop2, new Vector2(transform.position.x-0.5f,transform.position.y), Quaternion.identity);
             Destroy(gameObject);
         }
     }

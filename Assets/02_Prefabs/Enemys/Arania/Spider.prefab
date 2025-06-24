@@ -1546,12 +1546,13 @@ MonoBehaviour:
   player: {fileID: 0}
   moveSpeed: 2
   detectionRange: 3
-  biteDamage: 10
+  biteDamage: 5
   biteCooldown: 2
-  vida: 50
+  vida: 25
   trapInterval: 5
   trapSpawnRadius: 3
   patrolChangeInterval: 2
+  drop: {fileID: 2915929634409052527, guid: 5910c3f10c5d51545a65f0e81b2583e6, type: 3}
 --- !u!95 &8999546923105773170
 Animator:
   serializedVersion: 5
@@ -1604,7 +1605,7 @@ BoxCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
