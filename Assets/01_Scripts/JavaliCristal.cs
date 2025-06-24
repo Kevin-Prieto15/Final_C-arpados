@@ -7,7 +7,7 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
 {
     [Header("Stats")]
     public float vida = 30;
-    public int da�o = 5;
+    public int daño = 5;
 
     [Header("Movimiento y Animaci�n")]
     public float velocidad = 3f;
@@ -30,6 +30,13 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
     private float cooldownAtaque = 0f;
     private float temporizadorPatrulla = 0f;
     private bool estaMoviendosePatrulla = false;
+    private float distanciaAlPlayer=100;
+
+    // ╔═ Audio y Efectos ═══════════════════════════════════════════════╗
+    private AudioSource stepAudio;
+    public GameObject efectoCaminar;
+    private bool isWalking = false;
+    private float particulaCooldown = 0f;
 
     private enum Estado { Quieto, Patrullando, Persiguiendo, TurboRun }
     private Estado estadoActual = Estado.Patrullando;
@@ -82,7 +89,7 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
         cooldownAtaque -= Time.deltaTime;
         cooldownTurboRun -= Time.deltaTime;
 
-        float distanciaAlPlayer = Vector2.Distance(transform.position, player.position);
+        distanciaAlPlayer = Vector2.Distance(transform.position, player.position);
 
         switch (estadoActual)
         {
@@ -124,6 +131,28 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
                 EjecutarTurboRun(distanciaAlPlayer);
                 break;
         }
+        ManejarMovimiento();
+    }
+
+    private void ManejarMovimiento()
+    {
+
+        if (isWalking&& distanciaAlPlayer<distanciaAbandono)
+        {
+
+            // Partícula al caminar cada 0.3s
+            if (particulaCooldown >= 0.3f)
+            {
+                Vector3 posParticula = new Vector3(transform.position.x, transform.position.y - 1f);
+                Instantiate(efectoCaminar, posParticula, Quaternion.Euler(-90, 0, 0));
+                particulaCooldown = 0f;
+            }
+            else
+            {
+                particulaCooldown += Time.deltaTime;
+            }
+        }
+
     }
 
     void PrepararTurboRun(float distanciaAlPlayer)
@@ -137,6 +166,7 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
         animator.SetFloat("DirX", direccionTurboRun.x);
         animator.SetFloat("DirY", direccionTurboRun.y);
         animator.SetFloat("Speed", velocidad * 2);
+        isWalking = true;
     }
 
     void EjecutarTurboRun(float distanciaAlPlayer)
@@ -169,6 +199,7 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
         animator.SetFloat("DirX", ultimaDireccion.x);
         animator.SetFloat("DirY", ultimaDireccion.y);
         animator.SetFloat("Speed", velocidad);
+        isWalking = true;
 
         rb.MovePosition(rb.position + direccion * velocidad * Time.deltaTime);
     }
@@ -189,12 +220,14 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
                 animator.SetFloat("DirX", ultimaDireccion.x);
                 animator.SetFloat("DirY", ultimaDireccion.y);
                 animator.SetFloat("Speed", velocidad);
+                isWalking = true;
 
                 temporizadorPatrulla = Random.Range(tiempoMovimientoAleatorio.x, tiempoMovimientoAleatorio.y);
             }
             else
             {
                 animator.SetFloat("Speed", 0);
+                isWalking = false;
                 temporizadorPatrulla = Random.Range(tiempoQuietoAleatorio.x, tiempoQuietoAleatorio.y);
             }
         }
@@ -234,9 +267,9 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
         animator.SetFloat("Speed", 0);
     }
 
-    public void takeDamage(float da�o)
+    public void takeDamage(float daño)
     {
-        vida -= da�o;
+        vida -= daño;
         if (vida <= 0)
         {
             spawner.AvisarMuerte();
@@ -254,7 +287,7 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
             if (!p.esInvisible)
             {
                 animator.SetTrigger("IsAttaking");
-                p.TakeDamage(da�o);
+                p.TakeDamage(daño);
                 cooldownAtaque = tiempoEntreAtaques;
             }
 
@@ -263,6 +296,7 @@ public class JavaliCristal : MonoBehaviour, IHaveSpawner
 
     void ReproducirSonidoAleatorio()
     {
+        if (distanciaAlPlayer >= distanciaAbandono) return;
         int index = Random.Range(0, 2);
 
         if (index == 0 && !pigSound1.isPlaying)

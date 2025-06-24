@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using Assets._01_Scripts;
+using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
 
 public class Spider : MonoBehaviour, IHaveSpawner
 {
@@ -26,6 +27,7 @@ public class Spider : MonoBehaviour, IHaveSpawner
 
     [Header("Patrullaje")]
     public float patrolChangeInterval = 2f;
+    private float distance;
 
     private Animator animator;
     private Vector2 patrolDirection;
@@ -97,7 +99,7 @@ public class Spider : MonoBehaviour, IHaveSpawner
     {
         if (player == null) return;
 
-        float distance = Vector2.Distance(transform.position, player.transform.position);
+        distance = Vector2.Distance(transform.position, player.transform.position);
 
         if (distance <= detectionRange && !Player.Instance.esInvisible)
             DecideAction();
@@ -112,7 +114,7 @@ public class Spider : MonoBehaviour, IHaveSpawner
 
         // Reproduce Spider_Walk cada 3 segundos, si no se est� reproduciendo ya
         walkTimer += Time.deltaTime;
-        if (walkTimer >= walkInterval)
+        if (walkTimer >= walkInterval && distance <= detectionRange+4)
         {
             if (walkAudio != null && !walkAudio.isPlaying)
             {
@@ -259,9 +261,9 @@ public class Spider : MonoBehaviour, IHaveSpawner
 
         }
     }
-    public void takeDamage(float da�o)
+    public void takeDamage(float daño)
     {
-        vida -= da�o;
+        vida -= daño;
         if (vida <= 0)
         {
             spawner.AvisarMuerte();
@@ -278,7 +280,7 @@ public class Spider : MonoBehaviour, IHaveSpawner
 
     void SpawnDust()
     {
-        if (dustEffect == null) return;
+        if (dustEffect == null && distance <= detectionRange+4) return;
 
         dustTimer -= Time.deltaTime;
 

@@ -389,6 +389,7 @@ MonoBehaviour:
   tiempoMovimientoAleatorio: {x: 2, y: 5}
   tiempoQuietoAleatorio: {x: 2, y: 5}
   Drop: {fileID: 3781878418559231564, guid: 38ae6e9d1c682d349880bca63a42edef, type: 3}
+  efectoCaminar: {fileID: 7910021138267125114, guid: 1194dc04110409846b2964473fcb653d, type: 3}
   afkSound: {fileID: -2640118183345742345}
   attackSound: {fileID: 7087116314550472403}
   killSound: {fileID: 4500860104003017684}

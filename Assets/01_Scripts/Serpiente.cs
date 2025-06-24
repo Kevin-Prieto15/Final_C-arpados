@@ -3,12 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
 
 public class Serpiente : MonoBehaviour, IHaveSpawner
 {
     [Header("Stats")]
     public float vida = 30f;
-    public float da�o = 5f;
+    public float daño = 5f;
 
 
     [Header("Movimiento y Animaci�n")]
@@ -16,6 +17,7 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
     public float distanciaDeteccion = 5f;
     public float distanciaAbandono = 8f;
     public float tiempoEntreAtaques = 1f;
+    private float distanciaAlPlayer=100;
 
     [Header("Patrullaje")]
     public Vector2 tiempoMovimientoAleatorio = new Vector2(2f, 5f);
@@ -37,6 +39,12 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
     private Estado estadoActual = Estado.Quieto;
     private Spawner spawner;
     public GameObject Drop;
+
+    // ╔═ Audio y Efectos ═══════════════════════════════════════════════╗
+    private AudioSource stepAudio;
+    public GameObject efectoCaminar;
+    private bool isWalking = false;
+    private float particulaCooldown = 0f;
 
     public void SetSpawner(Spawner s)
     {
@@ -78,7 +86,7 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
 
         cooldownAtaque -= Time.deltaTime;
 
-        float distanciaAlPlayer = Vector2.Distance(transform.position, player.position);
+        distanciaAlPlayer = Vector2.Distance(transform.position, player.position);
 
         switch (estadoActual)
         {
@@ -114,6 +122,28 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
                 }
                 break;
         }
+        ManejarMovimiento();
+    }
+
+    private void ManejarMovimiento()
+    {
+
+        if (isWalking && distanciaAlPlayer < distanciaAbandono)
+        {
+
+            // Partícula al caminar cada 0.3s
+            if (particulaCooldown >= 0.3f)
+            {
+                Vector3 posParticula = new Vector3(transform.position.x, transform.position.y - 1.7f);
+                Instantiate(efectoCaminar, posParticula, Quaternion.Euler(-90, 0, 0));
+                particulaCooldown = 0f;
+            }
+            else
+            {
+                particulaCooldown += Time.deltaTime;
+            }
+        }
+
     }
 
     void SeguirPlayer()
@@ -124,6 +154,7 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
         animator.SetFloat("DirX", ultimaDireccion.x);
         animator.SetFloat("DirY", ultimaDireccion.y);
         animator.SetFloat("Speed", velocidad);
+        isWalking = true;
 
         rb.MovePosition(rb.position + direccion * velocidad * Time.deltaTime);
     }
@@ -144,12 +175,14 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
                 animator.SetFloat("DirX", ultimaDireccion.x);
                 animator.SetFloat("DirY", ultimaDireccion.y);
                 animator.SetFloat("Speed", velocidad);
+                isWalking = true;
 
                 temporizadorPatrulla = Random.Range(tiempoMovimientoAleatorio.x, tiempoMovimientoAleatorio.y);
             }
             else
             {
                 animator.SetFloat("Speed", 0);
+                isWalking = false;
                 temporizadorPatrulla = Random.Range(tiempoQuietoAleatorio.x, tiempoQuietoAleatorio.y);
             }
         }
@@ -189,13 +222,14 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
         animator.SetFloat("Speed", 0);
     }
 
-    public void takeDamage(float da�o)
+    public void takeDamage(float daño)
     {
-        vida -= da�o;
+        vida -= daño;
         if (vida <= 0)
         {
             spawner.AvisarMuerte();
             Instantiate(Drop, transform.position, Quaternion.identity);
+            killSound.Play();
             Destroy(gameObject);
         }
     }
@@ -208,7 +242,7 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
             if (!p.esInvisible)
             {
                 animator.SetTrigger("IsAttaking");
-                p.TakeDamage(da�o);
+                p.TakeDamage(daño);
                 cooldownAtaque = tiempoEntreAtaques;
             }
            
@@ -219,13 +253,8 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
     {
         if (isDead) return;
 
-        if (vida <= 0f)
-        {
-            killSound.Play();
-            isDead = true;
-            CancelInvoke(nameof(HandleSnakeAudio));
-            return;
-        }
+        if (distanciaAlPlayer > distanciaAbandono) return;
+
 
         if (vida <= 6f)
         {
@@ -240,7 +269,7 @@ public class Serpiente : MonoBehaviour, IHaveSpawner
         {
             if (!afkSound.isPlaying && (estadoActual == Estado.Quieto || estadoActual == Estado.Patrullando))
             {
-                InvokeRepeating(nameof(PlayAfkSound), 0f, 5f);
+                PlayAfkSound();
             }
         }
     }

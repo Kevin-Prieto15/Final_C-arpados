@@ -221,6 +221,7 @@ MonoBehaviour:
   tiempoEntreAtaques: 1
   tiempoMovimientoAleatorio: {x: 2, y: 5}
   tiempoQuietoAleatorio: {x: 2, y: 5}
+  efectoCaminar: {fileID: 7910021138267125114, guid: 1194dc04110409846b2964473fcb653d, type: 3}
   Drop: {fileID: 2915929634409052527, guid: 5910c3f10c5d51545a65f0e81b2583e6, type: 3}
   pigSound1: {fileID: 7676938434782044846}
   pigSound2: {fileID: -5145659174650555058}

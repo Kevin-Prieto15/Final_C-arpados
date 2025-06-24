@@ -16,6 +16,11 @@ public class Oscuridad : MonoBehaviour
     [Range(0f, 1f)] public float alphaMin = 0f;
     [Range(0f, 1f)] public float alphaMax = 230f / 255f;
 
+    [Header("Sonidos de ambiente")]
+    public AudioClip sonidoDia;
+    public AudioClip sonidoNoche;
+    public AudioSource audioSource;
+
     private float tiempoActual = 0f;
     private enum Estado { Claro, Oscureciendo, Oscuro, Aclarando }
     private Estado estado = Estado.Claro;
@@ -23,6 +28,9 @@ public class Oscuridad : MonoBehaviour
     void Start()
     {
         SetAlpha(alphaMin);
+        audioSource.clip = sonidoDia;
+        audioSource.loop = true;
+        audioSource.Play();
     }
 
     void Update()
@@ -45,6 +53,7 @@ public class Oscuridad : MonoBehaviour
                 {
                     tiempoActual = 0f;
                     estado = Estado.Oscuro;
+                    CambiarSonido(sonidoNoche);
                 }
                 break;
 
@@ -62,6 +71,7 @@ public class Oscuridad : MonoBehaviour
                 {
                     tiempoActual = 0f;
                     estado = Estado.Claro;
+                    CambiarSonido(sonidoDia);
                 }
                 break;
         }
@@ -73,4 +83,14 @@ public class Oscuridad : MonoBehaviour
         color.a = a;
         spriteOscuro.color = color;
     }
+
+    private void CambiarSonido(AudioClip nuevoClip)
+    {
+        if (audioSource.clip != nuevoClip)
+        {
+            audioSource.clip = nuevoClip;
+            audioSource.Play();
+        }
+    }
+
 }
